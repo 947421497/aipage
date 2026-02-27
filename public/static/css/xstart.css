@@ -1,0 +1,158 @@
+body {
+    padding-top: 50px;
+    background-color: #f8f8f8;
+}
+/* 左侧菜单栏样式 */
+#sidebar {
+    position: fixed;
+    top: 50px;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    display: block;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+    width: 220px;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+/* 移动端隐藏菜单 */
+@media (max-width: 768px) {
+    #sidebar {
+        left: -220px;
+    }
+    #sidebar.toggled {
+        left: 0;
+    }
+    #main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+/* 主内容区 */
+#main {
+    padding: 20px;
+    margin-left: 220px;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    width: calc(100% - 220px);
+}
+.page-header {
+    margin: 0 0 10px 0;
+    padding:10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom:1px solid #ddd;
+}
+/* 导航栏样式 */
+.navbar-brand {
+    padding: 15px;
+}
+.navbar-brand a{
+    color: #9d9d9d;
+}
+.navbar-brand a:hover{
+    color: #fff;
+    text-decoration: none;
+}
+/* 菜单项样式 */
+.nav-sidebar {
+    margin-right: -21px;
+    margin-bottom: 20px;
+    margin-left: -20px;
+}
+.nav-sidebar > li > a {
+    padding: 12px 20px;
+}
+.nav-sidebar > .active > a,
+.nav-sidebar > .active > a:hover,
+.nav-sidebar > .active > a:focus {
+    color: #fff;
+    background-color: #428bca;
+}
+/* 菜单切换按钮 */
+#menu-toggle {
+    float: left;
+    color: #fff;
+    margin-right: 10px;
+    cursor: pointer;
+    display: none;
+}
+@media (max-width: 768px) {
+    #menu-toggle {
+        display: block;
+    }
+}
+/*my*/
+.form-top {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.mtn {
+    margin-top: 10px;
+}
+.user-profile .form-group {
+    margin-bottom: 0;
+}
+.panel-heading .active {
+    font-weight: bold;
+}
+.panel-footer .pagination {
+    margin: 0;
+}
+/*admin upload*/
+#pic_box {
+    box-sizing: content-box;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: center;
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+
+.thumb, .thumb input {
+    width: 90px;
+    height: 60px;
+    line-height: 60px;
+    padding: 0;
+}
+
+.headimg, .headimg input {
+    width: 90px;
+    height: 90px;
+    line-height: 90px;
+    padding: 0;
+}
+
+#pic_remove {
+    display: none;
+    margin: 0 2px 2px 2px;
+    cursor: pointer;
+    line-height: 18px;
+    z-index: 10;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 90px;
+    height: 20px;
+    background: rgba(102, 102, 102, 0.7);
+    color: #fff;
+}
+#upload-input {
+    cursor: pointer;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+}

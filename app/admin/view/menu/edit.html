@@ -1,0 +1,73 @@
+{include file='public/header.html'}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
+            {include file='public/sidebar.html'}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+
+            <h3 class="page-header">修改菜单</h3>
+            <div class="panel panel-default">
+                <div class="panel-heading">修改菜单<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span></div>
+                <div class="panel-body">
+
+                    <div class="well">
+                        可用图标：<a href="https://v3.bootcss.com/components/" target="_blank">https://v3.bootcss.com/components/</a>
+                    </div>
+
+                    <form class="form-horizontal submit-ajax" role="form" action="{:url('edit')}" method="post">
+                        <input type="hidden" name="id" value="{$vo.id}" />
+
+                        <div class="form-group">
+                            <label for="title" class="col-sm-1 control-label">*标题</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="title" name="title" class="form-control" placeholder="请输入标题" value="{$vo.title}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="href" class="col-sm-1 control-label">*链接</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="href" name="href" class="form-control" placeholder="控制器/方法" value="{$vo.href}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sign" class="col-sm-1 control-label">*标识</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="sign" name="sign" class="form-control" placeholder="请输入标识" value="{$vo.sign}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="icon" class="col-sm-1 control-label">*图标</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="icon" name="icon" class="form-control" placeholder="图标样式" value="{$vo.icon}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sort" class="col-sm-1 control-label">*排序</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="sort" name="sort" class="form-control" style="width:auto;" placeholder="请输入排序值" value="{$vo.sort}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-1 control-label">*禁删</label>
+                            <div class="col-sm-11">
+                                {:form_radio('is_sys', ['否', '是'], $vo['is_sys'])}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-1 control-label">&nbsp;</label>
+                            <div class="col-sm-11">
+                                <input type="submit" id="submit" value="修改" class="btn btn-primary" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{include file='public/footer.html'}
+</body>
+</html>

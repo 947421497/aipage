@@ -1,0 +1,74 @@
+{include file='public/header.html'}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
+            {include file='public/sidebar.html'}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+
+            <h3 class="page-header">快速生成</h3>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">一键生成<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span></div>
+                <div class="panel-body">
+                    <form class="form-inline form-top submit-ajax" action="{:url('action')}" method="post">
+                        <div class="form-group">
+                            <label for="sign">标识：</label>
+                            <input type="text" id="sign" name="sign" value="test" class="form-control" placeholder="输入标识(表名)"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="cmd">操作：</label>
+                            <select name="cmd" id="cmd" class="form-control">
+                                <option value="make_table">生成表</option>
+                                <option value="remove_table">移除表</option>
+                                <option value="make_mvc">生成MVC</option>
+                                <option value="remove_mvc">移除MVC</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">提交</button>
+                    </form>
+                    <p>命令生成：</p>
+                    <ul>
+                        <li>生成表：<code>php xphpcli make:table admin@test test</code></li>
+                        <li>生成控制器：<code>php xphpcli make:ctrl admin@test _cp</code></li>
+                        <li>生成模型：<code>php xphpcli make:model admin@test id _def</code></li>
+                        <li>生成列表模板：<code>php xphpcli make:view admin@test index index</code></li>
+                        <li>生成添加模板：<code>php xphpcli make:view admin@test add add</code></li>
+                        <li>生成修改模板：<code>php xphpcli make:view admin@test edit edit</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">开发流程</div>
+                <div class="panel-body">
+                    设计数据表 —> 生成表 —> 生成MVC —> 添加菜单 —> 完善模板 —> 完善模型 —> 完善控制器
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">开发示例</div>
+                <div class="panel-body">
+                    <p>如建立数据表结构：<code>app/admin/command/make/table/test.tpl</code> </p>
+                    <pre>
+CREATE TABLE `aphp_test` (
+`id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+`title` varchar(100) NOT NULL DEFAULT '' COMMENT '标题',
+`content` text NOT NULL COMMENT '内容',
+`sort` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '排序',
+`update_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
+`status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态',
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='测试表';</pre>
+                </div>
+                <div class="panel-footer">
+                    一键生成MVC后，在 <code>菜单管理</code> 中添加菜单：<code>test/index</code>，再进一步完善模板模型和控制器。
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{include file='public/footer.html'}
+</body>
+</html>

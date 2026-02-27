@@ -1,0 +1,78 @@
+<?php
+/*------------------------------------------------------------------
+ | Software: XPHP Framework
+ | Site: https://xphp.net
+ |------------------------------------------------------------------
+ | (C)2020-2026 无念<24203741@qq.com>,All Rights Reserved.
+ |-----------------------------------------------------------------*/
+declare(strict_types=1);
+
+namespace xphp\core\cache;
+
+use xphp\core\Config;
+
+/**
+ * Redis缓存类
+ */
+class Redis extends Base
+{
+    private object $redis;
+
+    public function connect(): void
+    {
+        $config = Config::init()->get('cache.redis');
+        $this->redis = new \Redis();
+        $this->redis->connect($config['host'], $config['port']);
+        if (!empty($config['pass'])) {
+            $this->redis->auth($config['pass']);
+        }
+        $this->redis->select((int)$config['database']);
+    }
+
+    public function set(string $name, mixed $value, int $expire = 0): bool
+    {
+        $name = $this->parseName($name);
+        if ($this->redis->set($name, serialize($value))) {
+            return ($expire > 0) ? $this->redis->expire($name, $expire) : true;
+        }
+        return false;
+    }
+
+    public function get(string $name, mixed $default = null): mixed
+    {
+        $name = $this->parseName($name);
+        $data = $this->redis->get($name);
+        return is_string($data) ? unserialize($data) : $data;
+    }
+
+    public function del(string $name): bool
+    {
+        $name = $this->parseName($name);
+        return $this->redis->del($name);
+    }
+
+    public function has(string $name): bool
+    {
+        $name = $this->parseName($name);
+        return (bool)$this->redis->get($name);
+    }
+
+    public function flush(string $path = ''): bool
+    {
+        if ($path == '*') {
+            return $this->redis->flushall();
+        }
+        $path = empty($path) ? APP_NAME . '@cache/' : $this->parseName($path);
+        $keys = $this->redis->keys($path . '*');
+        foreach ($keys as $key) {
+            $this->redis->del($key);
+        }
+        return true;
+    }
+
+    private function parseName(string $name): string
+    {
+        [$app, $name] = name_parse($name, APP_NAME);
+        return rtrim($app . '@cache/' . $name, '*');
+    }
+}

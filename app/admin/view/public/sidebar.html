@@ -1,0 +1,7 @@
+<ul class="nav nav-sidebar">
+    <li{:nav_active('index')}><a href="{:url('index/index')}"><i class="glyphicon glyphicon-home"></i> 管理中心</a></li>
+    {php $menu=widget('menu')->get()}
+    {foreach $menu as $nav}
+    <li{:nav_active($nav['sign'])}><a href="{:url($nav['href'])}"><i class="{$nav.icon}"></i> {$nav.title}</a></li>
+    {/foreach}
+</ul>

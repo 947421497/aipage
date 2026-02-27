@@ -1,37 +1,39 @@
-# 一鱼快速构架 _XStart
+## 一鱼快速构架
 
-#### 介绍
-基于XPHP框架开发，包含用户模块和简易后台。适用于快速开发小型网站应用。
+ 一鱼快速构架(XStart)基于XPHP框架开发，包含用户模块和简易后台。适用于快速开发小型网站应用
 
-#### 软件架构
-软件架构说明
+### 演示地址
 
+http://xstart.xphp.net
 
-#### 安装教程
+### 环境要求
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+- PHP环境：PHP8.1 ~ PHP8.5
+- 数据库：MySQL5.6 ~ MySQL8.0
 
-#### 使用说明
+### 技术构架
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+- Bootstrap v3.4.1
+- jquery v3.7.1
+- layer_mobile v2.0
+- XPHP v6.1.x
 
-#### 参与贡献
+### 安装模块
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+- 未安装时跳转安装界面，一键安装。
 
+### 前台模块
 
-#### 特技
+- 首页展示：系统简介，关于页面
+- 用户模块：登录，注册，修改资料，修改密码，退出
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+### 后台模块
+
+- 用户管理：添加，修改，删除，启用，停用，修改等级
+- 网站配置：添加，修改，删除，生成配置文件
+- 菜单管理：添加，修改，删除，启用，停用
+- 数据备份：备份，还原，下载备份，删除备份
+
+### 技术支持
+
+框架官网：https://www.xphp.net QQ群1：325825297 QQ群2：16008861 作者：无念(24203741@qq.com) 

@@ -1,0 +1,46 @@
+{include file='public/header.html'}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
+            {include file='public/sidebar.html'}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+
+            <h3 class="page-header">网站配置</h3>
+            <div class="panel panel-default">
+                <div class="panel-heading">网站配置<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span></div>
+                <div class="panel-body">
+                    <p>文件位置：<code>app/index/config/site.php</code> 调用方式：<code>site('键名')</code></p>
+                    <button type="button" class="btn btn-info" onclick="ajaxConfirm('{:url('save_file')}','生成配置文件');">生成配置</button>
+                    <code> 注意：修改后须生成配置</code>
+                </div>
+                <div class="panel-body">
+                    <p>名称 - 键名 - 键值 - 操作</p>
+                    {foreach $list as $vo}
+                    <form id="myform{$vo.id}" method="post" class="submit-ajax" action="{:url('index')}">
+                        <input type="hidden" name="id" value="{$vo.id}"/>
+                        <div class="row" style="margin-bottom:10px;border-bottom: 1px solid #ddd;">
+                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="name" value="{$vo.name}" class="form-control" placeholder="输入名称"/></div>
+                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="config_key" value="{$vo.config_key}" class="form-control" placeholder="输入键名"/></div>
+                            <div class="col-md-8" style="margin-bottom: 5px;"><input type="text" name="config_value" value="{$vo.config_value}" class="form-control" placeholder="请输入值"/></div>
+                            <div class="col-md-2" style="margin-bottom: 5px;"><input type="submit" class="btn btn-primary" value="修改" /> <a href="javascript:ajaxConfirm('{:url('del',['id'=>$vo['id']])}','删除',2);" class="btn btn-danger">删除</a></div>
+                        </div>
+                    </form>
+                    {/foreach}
+                    <form id="myformadd" method="post" class="submit-ajax" action="{:url('index')}">
+                        <div class="row" style="margin-bottom:10px;border-bottom: 1px solid #ddd;">
+                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="name" value="" class="form-control" placeholder="输入名称"/></div>
+                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="config_key" value="" class="form-control" placeholder="输入键名"/></div>
+                            <div class="col-md-8" style="margin-bottom: 5px;"><input type="text" name="config_value" value="" class="form-control" placeholder="请输入值"/></div>
+                            <div class="col-md-2" style="margin-bottom: 5px;"><input type="submit" class="btn btn-success" value="添加" /></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{include file='public/footer.html'}
+</body>
+</html>

@@ -1,0 +1,50 @@
+<?php
+/*------------------------------------------------------------------
+ | Software: XPHP Framework
+ | Site: https://xphp.net
+ |------------------------------------------------------------------
+ | (C)2020-2026 无念<24203741@qq.com>,All Rights Reserved.
+ |-----------------------------------------------------------------*/
+declare(strict_types=1);
+
+namespace xphp\core;
+/**
+ * 部件基类
+ */
+abstract class Widget
+{
+    protected string $tag; // 缓存标签
+    protected int $expire = 0; // 缓存过期时间
+    protected string $prefix; // 缓存前缀
+
+    public function __construct()
+    {
+        $path = explode('\\', get_class($this));
+        $class = name_to_snake(end($path));
+        if (!$this->tag) {
+            $this->tag = $class;
+        }
+        $this->prefix = $path[1] . '@widget/' . $this->tag . '/' . $class;
+    }
+
+    // 设置缓存
+    abstract public function set(string|int $id = '', array $options = []);
+
+    // 获取缓存
+    public function get(string|int $id = '', array $options = [])
+    {
+        $name = $id;
+        if (!empty($options)) {
+            ksort($options);
+            $name .= http_build_query($options);
+        }
+        $name = empty($name) ? $this->prefix . '/default' : $this->prefix . '/' . md5(strval($name));
+        return Cache::init()->make($name, fn() => $this->set($id, $options), $this->expire);
+    }
+
+    // 重载缓存
+    public function reload(): bool
+    {
+        return Cache::init()->flush($this->prefix . '/*');
+    }
+}

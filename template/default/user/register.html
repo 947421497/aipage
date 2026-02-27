@@ -1,0 +1,75 @@
+{include file='public/header.html'}
+
+<div class="container mtn">
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            用户注册
+            <span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal submit-ajax" role="form" action="{:url('user/register')}" method="post">
+                <div class="form-group">
+                    <label for="username" class="col-sm-2 control-label">*用户名</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="username" name="username" class="form-control" style="width:auto;" placeholder="请输入用户名" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="nickname" class="col-sm-2 control-label">*昵称</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="nickname" name="nickname" class="form-control" style="width:auto;" placeholder="请输入昵称" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="col-sm-2 control-label">*登录密码</label>
+                    <div class="col-sm-10">
+                        <input type="password" id="password" name="password" class="form-control" style="width:auto;" placeholder="请输入密码" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="re_password" class="col-sm-2 control-label">*确认密码</label>
+                    <div class="col-sm-10">
+                        <input type="password" id="re_password" name="re_password" class="form-control" style="width:auto;" placeholder="请确认密码" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="bio"  class="col-sm-2 control-label">格言</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="bio" name="bio" class="form-control" style="width:auto;" placeholder="请输入格言" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="qq" class="col-sm-2 control-label">QQ</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="qq" name="qq" class="form-control" style="width:auto;" placeholder="请输入QQ" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="col-sm-2 control-label">邮箱</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="email" name="email" class="form-control" style="width:auto;" placeholder="请输入邮箱" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="mobile" class="col-sm-2 control-label">手机</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="mobile" name="mobile" class="form-control" style="width:auto;" placeholder="请输入手机号" value="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">&nbsp;</label>
+                    <div class="col-sm-10">
+                        <input type="submit" value="注册" class="btn btn-primary" />
+                        <a href="{:url('user/login')}" class="btn btn-default">登录</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{include file='public/footer.html'}
+</body>
+</html>

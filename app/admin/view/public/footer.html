@@ -1,0 +1,17 @@
+<script src="__STATIC__/js/jquery-3.7.1.min.js"></script>
+<script src="__STATIC__/bootstrap/js/bootstrap.min.js"></script>
+<script src="__STATIC__/layer_mobile/layer.js"></script>
+<script src="__STATIC__/js/xphp-1.0.js?v={:site_ver()}"></script>
+<script>
+    $(document).ready(function() {
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#sidebar").toggleClass("toggled");
+        });
+        $(window).resize(function() {
+            if ($(window).width() > 768) {
+                $("#sidebar").removeClass("toggled");
+            }
+        });
+    });
+</script>

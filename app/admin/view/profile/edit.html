@@ -1,0 +1,65 @@
+{include file='public/header.html'}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
+            {include file='public/sidebar.html'}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+            <h3 class="page-header">个人中心</h3>
+            <ul class="nav nav-tabs">
+                <li><a href="{:url('profile/index')}">个人中心</a></li>
+                <li class="active"><a href="{:url('profile/edit')}">修改资料</a></li>
+                <li><a href="{:url('profile/password')}">修改密码</a></li>
+            </ul>
+            <div class="panel panel-default mtn">
+                <div class="panel-heading">
+                    修改资料<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span>
+                </div>
+                <div class="panel-body">
+                    <form class="form-horizontal submit-ajax" role="form" action="{:url('profile/edit')}" method="post">
+                        <input type="hidden" name="id" value="{$vo.id}" />
+                        <div class="form-group">
+                            <label for="nickname" class="col-sm-1 control-label">*昵称</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="nickname" name="nickname" class="form-control" style="width:auto;" placeholder="请输入昵称" value="{$vo.nickname}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bio"  class="col-sm-1 control-label">格言</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="bio" name="bio" class="form-control" style="width:auto;" placeholder="请输入格言" value="{$vo.bio}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="qq" class="col-sm-1 control-label">QQ</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="qq" name="qq" class="form-control" style="width:auto;" placeholder="请输入QQ号" value="{$vo.qq}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="col-sm-1 control-label">邮箱</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="email" name="email" class="form-control" style="width:auto;" placeholder="请输入邮箱" value="{$vo.email}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="mobile" class="col-sm-1 control-label">手机</label>
+                            <div class="col-sm-11">
+                                <input type="text" id="mobile" name="mobile" class="form-control" style="width:auto;" placeholder="请输入手机号" value="{$vo.mobile}" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-1 control-label">&nbsp;</label>
+                            <div class="col-sm-11">
+                                <input type="submit" value="修改" class="btn btn-primary" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{include file='public/footer.html'}
+</body>
+</html>

@@ -1,0 +1,122 @@
+{include file='public/header.html'}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
+            {include file='public/sidebar.html'}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+
+            <h3 class="page-header">数据备份</h3>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <a href="{:url('index')}" class="active">数据备份</a> | <a href="{:url('restore')}">数据还原</a>
+                </div>
+                <div class="panel-body">
+                    <button type="button" class="btn btn-primary" onclick="databack();"><i class="glyphicon glyphicon-floppy-disk"></i> 备份表</button>
+                    <button type="button" class="btn btn-success" onclick="actionConfirm('优化表','{:url('optimize')}');"><i class="glyphicon glyphicon-leaf"></i> 优化表</button>
+                    <button type="button" class="btn btn-info" onclick="actionConfirm('修复表','{:url('repair')}');"><i class="glyphicon glyphicon-wrench"></i> 修复表</button>
+
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="detail-col"><input type="checkbox" onclick="selectAll(this.checked)" /></th>
+                            <th>表名</th>
+                            <th>备注</th>
+                            <th>类型</th>
+                            <th>编码</th>
+                            <th>数据行数</th>
+                            <th>数据大小</th>
+                            <th>更新时间</th>
+                            <th>碎片</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {foreach $list as $vo}
+                        <tr>
+                            <td class="center"><input type="checkbox" name="ids" value="{$vo.Name}" /> </td>
+                            <td><a href="javascript:remoteUrl('{:url('structure',['table'=>$vo['Name']])}');" data-toggle="modal">{$vo.Name}</a></td>
+                            <td>{$vo.Comment}</td>
+                            <td>{$vo.Engine}</td>
+                            <td>{$vo.Collation}</td>
+                            <td>{$vo.Rows}</td>
+                            <td>{$vo.Data_length}</td>
+                            <td>{$vo.Update_time}</td>
+                            <td>{$vo.Data_free}</td>
+                            <td>
+                                <a href="javascript:ajaxConfirm('{:url('optimize',['ids'=>$vo['Name']])}','优化表',2);" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-leaf"></i></a>
+                                <a href="javascript:ajaxConfirm('{:url('repair',['ids'=>$vo['Name']])}','修复表',2);" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-wrench"></i></a>
+                            </td>
+                        </tr>
+                        {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="remoteModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"><span class="table"></span> 表结构：</h4>
+            </div>
+            <div class="modal-body">
+                text
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file='public/footer.html'}
+
+<script>
+    function remoteUrl(url){
+        $.get(url, function(res){
+            if (res.status === 1) {
+                $('#remoteModal .table').html(res.table);
+                $('#remoteModal .modal-body').html('<pre>'+res.data+'</pre>');
+            }
+        },'json');
+        $('#remoteModal').modal({show:true});
+    }
+    function databack() {
+        var ids = [];
+        $('tbody input').each(function(index, el) {
+            if($(this).prop('checked')){
+                ids.push($(this).val())
+            }
+        });
+        var msg = '确认要备份表吗？<br/>'+ids.toString();
+        if (ids.length < 1) {
+            msg = '确认要备份全部数据吗？';
+        }
+        layer.open({content:msg,btn:['确认','取消'],yes:function(index){
+                var bak = layer.open({content:'数据备份中，请耐心等待……', shadeClose: false, type: 2});
+                $.post("{:url('backup')}",{ids:ids.toString()},function(res){
+                    if (res.status === 1) {
+                        layer.close(bak);
+                        toast(res.msg);
+                        setTimeout(function(){
+                            window.location.href = res.url;
+                        },2000);
+                    } else {
+                        toast(res.msg);
+                    }
+                },'json');
+
+                layer.close(index);
+            }
+        });
+    }
+</script>
+</body>
+</html>

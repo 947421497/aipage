@@ -1,0 +1,105 @@
+<?php
+/*------------------------------------------------------------------
+ | Software: XPHP Framework
+ | Site: https://xphp.net
+ |------------------------------------------------------------------
+ | (C)2020-2026 无念<24203741@qq.com>,All Rights Reserved.
+ |-----------------------------------------------------------------*/
+declare(strict_types=1);
+
+namespace xphp\core;
+/**
+ * 响应类
+ */
+class Response
+{
+    // 输出响应
+    public static function output($res = null, bool $trace = false): void
+    {
+        if (is_null($res)) {
+            return;
+        }
+        if (is_object($res) && method_exists($res, '__toString')) {
+            $res = $res->__toString();
+        }
+        if (is_scalar($res)) {
+            if (!IS_CLI && preg_match('/^http(s?):\/\//', $res)) {
+                header('location:' . $res);
+            } else {
+                if (!IS_CLI) {
+                    header('Content-type: text/html; charset=utf-8');
+                    if ($trace) {
+                        $res = DebugBar::init()->appendDebugBar($res);
+                    }
+                } elseif (is_bool($res)) {
+                    $res = '';
+                }
+                if (Config::init()->get('debug_bar.show_html_footer', false)) {
+                    $res .= "\n" . DebugBar::init()->getHtmlFooter();
+                }
+                echo $res;
+            }
+        } else {
+            header('Content-type: application/json; charset=utf-8');
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            exit();
+        }
+    }
+
+    public static function json(int $code, string $msg = '', ?array $data = null, array $extend = []): never
+    {
+        header('Content-type: application/json; charset=utf-8');
+        if (empty($msg)) {
+            $msg = Config::init()->get('response.code_msg.' . $code, 'Error...');
+        }
+        $json = Config::init()->get('response.json', ['ret' => 'ret', 'msg' => 'msg', 'data' => 'data', 'status' => 'status']);
+        $res = [];
+        $res[$json['ret']] = $code;
+        $res[$json['msg']] = $msg;
+        if (null !== $data) {
+            $res[$json['data']] = $data;
+        }
+        $res[$json['status']] = ($code < 400) ? 1 : 0;
+        $res = array_merge($res, $extend);
+        exit(json_encode($res, JSON_UNESCAPED_UNICODE));
+    }
+
+    public static function halt(string $msg = '', int $code = 400, array $params = []): never
+    {
+        if (empty($msg)) {
+            $msg = Config::init()->get('response.code_msg.' . $code, 'Error...');
+        }
+        if (!empty($params) && str_contains($msg, '$')) {
+            $msg = preg_replace_callback('/{\s*\$([a-zA-Z_][a-zA-Z0-9_]*)\s*}/i', fn($v) => $params[$v[1]] ?? '', $msg);
+        }
+        if (IS_CLI) {
+            exit(PHP_EOL . "\033[;36m " . $code . ': ' . $msg . " \x1B[0m\n" . PHP_EOL); // 命令行
+        }
+        if (IS_AJAX) {
+            self::json($code, $msg); // ajax
+        }
+        $class = '\\app\\' . APP_NAME . '\\controller\\Error';
+        if (class_exists($class)) {
+            $res = call_user_func_array([App::make($class), '_' . $code], [$msg, $params]);
+            self::output($res);
+        } else {
+            ob_clean();
+            header('Content-type: text/html; charset=utf-8');
+            $halt_tpl = ROOT_PATH . '/xphp/tpl/response_halt.php';
+            if (file_exists($halt_tpl)) {
+                include $halt_tpl;
+            } else {
+                echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Error!</title></head><body><h1>):</h1><p><strong style="color:#c00;">' . $msg . '</strong></p><p><a href="javascript:history.back(-1);">Go Back</a></p></body></html>';
+            }
+        }
+        exit();
+    }
+
+    public static function validate(array $errors = []): void
+    {
+        if (!empty($errors)) {
+            $msg = current($errors);
+            self::halt($msg, 406, ['field' => array_key_first($errors)]);
+        }
+    }
+}

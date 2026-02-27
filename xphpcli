@@ -1,0 +1,6 @@
+#!/usr/bin/env php
+<?php
+use xphp\core\App;
+define('ROOT_PATH', strtr(realpath(__DIR__ . '/'), '\\', '/'));
+require ROOT_PATH . '/xphp/bootstrap.php';
+App::init('index')->boot();

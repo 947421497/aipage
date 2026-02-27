@@ -1,0 +1,77 @@
+{include file='public/header.html'}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
+            {include file='public/sidebar.html'}
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+
+            <h3 class="page-header">管理中心</h3>
+            <div class="row">
+                <div class="col-xs-6 col-sm-3">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">用户总数</h3>
+                        </div>
+                        <div class="panel-body">
+                            {php $count=db('user')->count()}
+                            <a href="{:url('user/index')}">{$count}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-3">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">今日新增</h3>
+                        </div>
+                        <div class="panel-body">
+                            {php $today_count=db('user')->where('create_time','>',strtotime(date('Y-m-d')))->count()}
+                            {$today_count}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-3">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">文章数量</h3>
+                        </div>
+                        <div class="panel-body">
+                            0
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-3">
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">友链待审</h3>
+                        </div>
+                        <div class="panel-body">
+                            0
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="well">欢迎光临，<code>{:session('user.nickname')}</code></div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <tbody>
+                    {foreach $sys as $k=>$v}
+                    <tr>
+                        <td>{$k}</td>
+                        <td>{$v}</td>
+                    </tr>
+                    {/foreach}
+                    <tr>
+                        <td>框架版本</td>
+                        <td>__POWERED__ [ <a href="https://www.xphp.net" target="_blank">查看最新版本</a> ]</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{include file='public/footer.html'}
+</body>
+</html>

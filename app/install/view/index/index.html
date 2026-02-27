@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>快速安装 - {:site('site_title')}</title>
+    <link rel="stylesheet" href="__STATIC__/bootstrap/css/bootstrap.min.css">
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 90px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="alert alert-info">
+        <ol>
+            <li>在 .env 或 config/database.php 中配置数据库</li>
+            <li>复制 backup 下 bak_备份名 一键安装</li>
+            <li>重装时清空数据库并删除 backup/install.lock</li>
+        </ol>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <i class="glyphicon glyphicon-wrench"></i> 一键快速还原安装(迁移)
+        </div>
+        <div class="panel-body">
+            <form class="install form-inline" method="post">
+                <div class="form-group">
+                    <label for="path">备份名称：</label>
+                    <input type="text" class="form-control" id="path" name="path" placeholder="备份文件夹名 bak_***" required />
+                </div>
+                <button type="submit" class="btn btn-primary">一键安装</button>
+                <a href="__HOST__" class="btn btn-success">进入前台</a>
+                <a href="__HOST__/admin.php" class="btn btn-info">进入后台</a>
+            </form>
+        </div>
+        <div class="panel-footer text-right">
+            <a href="https://xphp.net" target="_blank">XPHP</a> © {:date('Y')} • 轻量设计 • 高效开发
+        </div>
+    </div>
+</div>
+
+<script src="__STATIC__/js/jquery-3.7.1.min.js"></script>
+<script src="__STATIC__/bootstrap/js/bootstrap.min.js"></script>
+<script src="__STATIC__/layer_mobile/layer.js"></script>
+<script src="__STATIC__/js/xphp-1.0.js"></script>
+<script>
+    $(function () {
+        $('.install').submit(function(){
+            var url = $(this).attr('action');
+            var data = $(this).serialize();
+            var bak = layer.open({content:'还原安装中，请耐心等待……', shadeClose: false, type: 2});
+            $.post(url,data,function(res){
+                layer.close(bak);
+                if (res.status === 1) {
+                    layer.open({content:res.msg, btn:['进入前台','取消'], yes:function(index) {
+                            layer.close(index);
+                            window.location.href = '__HOST__';
+                        }
+                    });
+                } else {
+                    layer.open({content: res.msg, btn: '确认'});
+                }
+            },'json');
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

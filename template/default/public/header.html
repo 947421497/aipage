@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{:site('site_title', '一鱼PHP框架')}</title>
+    <meta name="keywords" content="{:site('site_kw')}">
+    <meta name="description" content="{:site('site_desc')}">
+    <link href="__ROOT__/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="__STATIC__/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="__STATIC__/css/style.css?v={:site_ver()}" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header ">
+            <a href="{:url('index/index')}" class="navbar-brand">XStart</a>
+            <button class="navbar-toggle collapsed" data-toggle='collapse' data-target='.collapse'>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li{:nav_active('index')}><a href="{:url('index/index')}">首页</a></li>
+                <li{:nav_active('about')}><a href="{:url('about/index')}">关于</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {if !session('user.id'):}
+                <li><a href="{:url('user/login')}">登录</a></li>
+                {else:}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle='dropdown'>
+                        {:session('user.nickname')}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{:url('user/index')}">个人</a></li>
+                        <li><a href="javascript:ajaxConfirm('{:url('user/logout')}','退出')">退出</a></li>
+                    </ul>
+                </li>
+                {/if}
+                <li><a class="nav-link" href="https://qm.qq.com/cgi-bin/qm/qr?k=U7SzseDDXSbG9sB1CTEf5U10oFJOKR8-&jump_from=webapi" target="_blank">QQ群</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="clearfix" style="height:51px;"></div>
