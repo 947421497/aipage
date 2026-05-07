@@ -43,7 +43,7 @@
 
 ### 1. 用户表（xphp_user）
 
-用户表是系统的核心表之一，用于存储所有用户的基本信息，包括前台注册用户和后台管理员。表结构设计考虑了用户资料的完整性和扩展性，支持头像、积分、余额等常用功能。
+用户表是系统的核心表之一，用于存储所有用户的基本信息，包括前台注册用户和后台管理员。表结构设计考虑了用户资料的完整性和扩展性，支持头像、等级等常用功能。
 
 ```sql
 CREATE TABLE `xphp_user` (
@@ -58,8 +58,6 @@ CREATE TABLE `xphp_user` (
   `gender` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '性别(0未知/1男/2女)',
   `avatar` varchar(200) NOT NULL DEFAULT '' COMMENT '头像',
   `level` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '等级',
-  `money` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '余额',
-  `score` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '积分',
   `create_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0正常/1禁用)',
   PRIMARY KEY (`id`)
@@ -120,8 +118,6 @@ CREATE TABLE `xphp_config` (
 | gender | tinyint(1) | 0 | 性别：0=未知，1=男，2=女 |
 | avatar | varchar(200) | '' | 头像URL地址，存储头像图片路径 |
 | level | tinyint(1) | 0 | 用户等级，用于会员等级体系 |
-| money | decimal(10,2) | 0.00 | 账户余额，精确到分，最多999999.99元 |
-| score | int(10) | 0 | 积分，用于积分商城等功能 |
 | create_time | int(10) | 0 | 注册时间，Unix时间戳格式 |
 | status | tinyint(1) | 0 | 账号状态：0=正常，1=禁用 |
 
@@ -198,7 +194,7 @@ ALTER TABLE `xphp_config` ADD UNIQUE INDEX `idx_config_key` (`config_key`);
 
 ```sql
 INSERT INTO `xphp_user` VALUES 
-(1, 'admin', '0192023a7bbd73250516f069df18b500', '管理员', 'admin@example.com', '', '', '这个人很懒，什么都没写', 0, '', 1, 0.00, 0, UNIX_TIMESTAMP(), 0);
+(1, 'admin', '0192023a7bbd73250516f069df18b500', '管理员', 'admin@example.com', '', '', '这个人很懒，什么都没写', 0, '', 1, UNIX_TIMESTAMP(), 0);
 ```
 
 > **重要提示**：密码 `0192023a7bbd73250516f069df18b500` 是 `admin123` 的MD5加密值。在生产环境中，请务必在首次登录后立即修改默认密码，并使用强密码策略。
@@ -285,8 +281,6 @@ INSERT INTO `xphp_config` VALUES
 │ gender            │ tinyint(1)   │ 性别                                  │
 │ avatar            │ varchar(200) │ 头像URL                               │
 │ level             │ tinyint(1)   │ 用户等级                              │
-│ money             │ decimal      │ 账户余额                              │
-│ score             │ int(10)      │ 积分                                  │
 │ create_time       │ int(10)      │ 注册时间                              │
 │ status            │ tinyint(1)   │ 账号状态                              │
 └──────────────────────────────────────────────────────────────────────────┘

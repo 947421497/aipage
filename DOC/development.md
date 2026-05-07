@@ -273,7 +273,6 @@ $list = User::where('username', 'like', '%admin%')->select();
 // 统计查询
 $count = User::where('status', 0)->count();
 $maxId = User::max('id');
-$sumScore = User::sum('score');
 
 // 分页查询
 $list = User::page(1, 20)->select();
