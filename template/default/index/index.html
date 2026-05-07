@@ -1,50 +1,57 @@
 {include file='public/header.html'}
-<!--首页横幅-->
-<div class="jumbotron">
-    <div class="container">
-        <h1>{:site('site_h1', 'XPHP')}</h1>
-        <p>{:site('site_h2', '一个简单易用的轻量级php框架')}</p>
-        <p>
-            <a class="btn btn-info" href="{:url('user/index')}">用户登录</a>
-            <a class="btn btn-primary" href="__HOST__/admin.php">进入后台</a>
-            <a class="btn btn-success" href="https://xphp.net/docs" target="_blank">开发文档</a>
-        </p>
+
+<div class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold">{:site('site_h1', 'XPHP')}</h1>
+        <p class="lead mb-4">{:site('site_h2', '一个简单易用的轻量级php框架')}</p>
+        <a class="btn btn-light me-2" href="{:url('user/login')}"><i class="mdi mdi-login me-1"></i>用户登录</a>
+        <a class="btn btn-outline-light me-2" href="__HOST__/admin.php"><i class="mdi mdi-cog me-1"></i>进入后台</a>
+        <a class="btn btn-outline-light" href="https://xphp.net/docs" target="_blank"><i class="mdi mdi-book-open me-1"></i>开发文档</a>
     </div>
 </div>
-<!--主体内容-->
-<div class="container">
-    <!--公告-->
-    <div class="well clearfix">
-        <strong>公告：<span class="text-danger">{site('site_notice') ?: '暂无公告！'}</span></strong>
+
+<div class="container py-4">
+    <div class="alert alert-warning d-flex align-items-center">
+        <i class="mdi mdi-bullhorn me-2 fs-5"></i>
+        <div><strong>公告：</strong><span class="text-danger">{site('site_notice') ?: '暂无公告！'}</span></div>
     </div>
-    <!--内容1-->
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <i class="glyphicon glyphicon-flag"></i> 快速开始
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <i class="mdi mdi-rocket-launch fs-1 text-primary"></i>
+                    <h5 class="card-title mt-2">快速开始</h5>
+                    <p class="card-text text-muted">配置调用：<code>{:site('键名')}</code></p>
+                    <p class="card-text text-muted">快速CRUD：通过后台菜单 <code>生成</code> 进行</p>
+                </div>
+            </div>
         </div>
-        <div class="panel-body">
-            <p>Bootstrap v3中文文档：<a href="https://v3.bootcss.com" target="_blank">https://v3.bootcss.com</a></p>
-            <p>配置调用： <code>{#:site('键名')#}</code> </p>
-            <p>快速CRUD：可通过后台顶部菜单 <code>生成</code> 进行生成后台CRUD功能。</p>
-            <p>查看用户： <a href="{:url('user/info',['id'=>1])}">无念</a></p>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <i class="mdi mdi-view-dashboard fs-1 text-success"></i>
+                    <h5 class="card-title mt-2">开发案例</h5>
+                    <p class="card-text"><a href="https://xphp.net" target="_blank">框架官网</a></p>
+                    <p class="card-text"><a href="https://aphp.top" target="_blank">一鱼博客</a></p>
+                </div>
+            </div>
         </div>
-        <div class="panel-footer">
-            注意：修改模板后要 <a href="javascript:ajaxConfirm('{:url('api/clear')}','清除缓存');">清除缓存</a> ！
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body py-4">
+                    <i class="mdi mdi-account-group fs-1 text-info"></i>
+                    <h5 class="card-title mt-2">用户模块</h5>
+                    <p class="card-text text-muted">登录、注册、修改资料</p>
+                    <p class="card-text"><a href="{:url('user/info',['id'=>1])}">查看用户</a></p>
+                </div>
+            </div>
         </div>
     </div>
-    <!--/内容1-->
-    <!--内容2-->
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <i class="glyphicon glyphicon-th-large"></i> 开发案例
-        </div>
-        <div class="panel-body">
-            <p>框架官网：<a href="https://xphp.net" target="_blank">https://xphp.net</a></p>
-            <p>一鱼博客：<a href="https://aphp.top" target="_blank">https://aphp.top</a></p>
-        </div>
+
+    <div class="text-center text-muted small">
+        <a href="javascript:ajaxConfirm('{:url('api/clear')}','清除缓存');">清除缓存</a>
     </div>
-    <!--/内容2-->
 </div>
+
 {include file='public/footer.html'}
-</body>
-</html>

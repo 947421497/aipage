@@ -1,23 +1,34 @@
-{include file='public/header.html'}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
-            {include file='public/sidebar.html'}
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
-
-            <h3 class="page-header">标题</h3>
-            <div class="panel panel-default">
-                <div class="panel-heading">标题<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span></div>
-                <div class="panel-body">
-                    内容
-                </div>
-                <div class="panel-footer">页脚</div>
-            </div>
-
-        </div>
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
     </div>
+  </div>
 </div>
-{include file='public/footer.html'}
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
+
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">标题</div></header>
+              <div class="card-body">
+                内容
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
 </body>
 </html>

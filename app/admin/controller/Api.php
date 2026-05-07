@@ -47,10 +47,18 @@ class Api
     public function image_del()
     {
         $pic = input('post.pic', '', 'clear_html');
-        $filename = trim($pic, '.');
-        $file = ROOT_PATH . '/public' . $filename;
-        if (file_exists($file)) {
-            unlink($file);
+
+        $filename = trim(str_replace(['../', '..\\', '..'], '', $pic), '/');
+
+        $baseDir = ROOT_PATH . '/public/uploads/';
+        $realPath = realpath($baseDir . $filename);
+
+        if ($realPath === false || !str_starts_with($realPath, realpath($baseDir))) {
+            $this->error('非法路径');
+        }
+
+        if (file_exists($realPath)) {
+            unlink($realPath);
         }
         $this->success('删除成功');
     }

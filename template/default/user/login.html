@@ -1,47 +1,48 @@
 {include file='public/header.html'}
 
-<div class="container mtn">
-
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            用户登录
-            <span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span>
-        </div>
-        <div class="panel-body">
-            <form class="form-horizontal submit-ajax" role="form" action="" method="post">
-                <input type="hidden" name="referer" value="__HISTORY__">
-                <div class="form-group">
-                    <label for="username" class="col-sm-2 control-label">用户名</label>
-                    <div class="col-sm-10">
-                        <input type="text" id="username" name="username" class="form-control" style="width:auto;" placeholder="请输入用户名" value="{:input('get.from','','clear_html')}"/>
-                    </div>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="mdi mdi-login me-2"></i>用户登录</h5>
                 </div>
-                <div class="form-group">
-                    <label for="password" class="col-sm-2 control-label">密&nbsp;&nbsp;&nbsp;&nbsp;码</label>
-                    <div class="col-sm-10">
-                        <input type="password" id="password" name="password" class="form-control" style="width:auto;" placeholder="请输入密码" value=""/>
-                    </div>
+                <div class="card-body" style="max-width:460px;margin:0 auto;">
+                    <form class="site-form submit-ajax" action="" method="post">
+                        <input type="hidden" name="referer" value="__HISTORY__">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">用户名</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="mdi mdi-account"></i></span>
+                                <input type="text" id="username" name="username" class="form-control" placeholder="请输入用户名" value="{:input('get.from','','clear_html')}" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">密码</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="mdi mdi-lock"></i></span>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="请输入密码" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="captcha" class="form-label">验证码</label>
+                            <div class="input-group">
+                                <input type="text" id="captcha" name="captcha" class="form-control" placeholder="请输入验证码" />
+                                <img src="{:url('user/captcha')}" class="input-group-text" style="cursor:pointer;padding:0;border-radius:0 4px 4px 0;" onclick="this.src='{:url('user/captcha')}?'+Math.random();" alt="验证码" />
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary"><i class="mdi mdi-login me-1"></i>登录</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="captcha" class="col-sm-2 control-label">验证码</label>
-                    <div class="col-sm-10">
-                        <input name="captcha" id="captcha" type="text" class="form-control" style="width:auto;display: inline-block;" placeholder="请输入验证码"/>
-                        <img src="{:url('user/captcha')}" style="cursor:pointer;" onclick="this.src='{:url('user/captcha')}?'+Math.random();"/>
-                    </div>
+                <div class="card-footer bg-white text-center">
+                    <span class="text-muted">还没有账号？</span>
+                    <a href="{:url('user/register')}">立即注册</a>
                 </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">&nbsp;</label>
-                    <div class="col-sm-10">
-                        <input type="submit" value="登录" class="btn btn-primary"/>
-                        <a href="{:url('user/register')}" class="btn btn-default">注册</a>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-
 </div>
 
 {include file='public/footer.html'}
-</body>
-</html>

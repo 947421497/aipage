@@ -1,82 +1,109 @@
-{include file='public/header.html'}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
-            {include file='public/sidebar.html'}
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
+    </div>
+  </div>
+</div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
 
-            <h3 class="page-header">数据备份</h3>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <a href="{:url('index')}" class="active">数据备份</a> | <a href="{:url('restore')}">数据还原</a>
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">数据备份</div></header>
+              <div class="card-body">
+                <div class="card-btns mb-2-5">
+                  <a href="{:url('index')}" class="btn btn-primary active"><i class="mdi mdi-content-save"></i> 数据备份</a>
+                  <a href="{:url('restore')}" class="btn btn-default"><i class="mdi mdi-restore"></i> 数据还原</a>
                 </div>
-                <div class="panel-body">
-                    <button type="button" class="btn btn-primary" onclick="databack();"><i class="glyphicon glyphicon-floppy-disk"></i> 备份表</button>
-                    <button type="button" class="btn btn-success" onclick="actionConfirm('优化表','{:url('optimize')}');"><i class="glyphicon glyphicon-leaf"></i> 优化表</button>
-                    <button type="button" class="btn btn-info" onclick="actionConfirm('修复表','{:url('repair')}');"><i class="glyphicon glyphicon-wrench"></i> 修复表</button>
-
+                <div class="card-btns mb-2-5">
+                  <button type="button" class="btn btn-primary me-1" onclick="databack();"><i class="mdi mdi-content-save"></i> 备份表</button>
+                  <button type="button" class="btn btn-success me-1" onclick="actionConfirm('优化表','{:url('optimize')}');"><i class="mdi mdi-leaf"></i> 优化表</button>
+                  <button type="button" class="btn btn-info" onclick="actionConfirm('修复表','{:url('repair')}');"><i class="mdi mdi-wrench"></i> 修复表</button>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                        <tr>
-                            <th class="detail-col"><input type="checkbox" onclick="selectAll(this.checked)" /></th>
-                            <th>表名</th>
-                            <th>备注</th>
-                            <th>类型</th>
-                            <th>编码</th>
-                            <th>数据行数</th>
-                            <th>数据大小</th>
-                            <th>更新时间</th>
-                            <th>碎片</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {foreach $list as $vo}
-                        <tr>
-                            <td class="center"><input type="checkbox" name="ids" value="{$vo.Name}" /> </td>
-                            <td><a href="javascript:remoteUrl('{:url('structure',['table'=>$vo['Name']])}');" data-toggle="modal">{$vo.Name}</a></td>
-                            <td>{$vo.Comment}</td>
-                            <td>{$vo.Engine}</td>
-                            <td>{$vo.Collation}</td>
-                            <td>{$vo.Rows}</td>
-                            <td>{$vo.Data_length}</td>
-                            <td>{$vo.Update_time}</td>
-                            <td>{$vo.Data_free}</td>
-                            <td>
-                                <a href="javascript:ajaxConfirm('{:url('optimize',['ids'=>$vo['Name']])}','优化表',2);" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-leaf"></i></a>
-                                <a href="javascript:ajaxConfirm('{:url('repair',['ids'=>$vo['Name']])}','修复表',2);" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-wrench"></i></a>
-                            </td>
-                        </tr>
-                        {/foreach}
-                        </tbody>
-                    </table>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="check-all" onclick="selectAll(this.checked)">
+                            <label class="form-check-label" for="check-all"></label>
+                          </div>
+                        </th>
+                        <th>表名</th>
+                        <th>备注</th>
+                        <th>类型</th>
+                        <th>编码</th>
+                        <th>数据行数</th>
+                        <th>数据大小</th>
+                        <th>更新时间</th>
+                        <th>碎片</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {foreach $list as $vo}
+                      <tr>
+                        <td>
+                          <div class="form-check">
+                            <input type="checkbox" class="form-check-input ids" name="ids" value="{$vo.Name}" id="ids-{$vo.Name}">
+                            <label class="form-check-label" for="ids-{$vo.Name}"></label>
+                          </div>
+                        </td>
+                        <td><a href="javascript:remoteUrl('{:url('structure',['table'=>$vo['Name']])}');" data-bs-toggle="modal" data-bs-target="#remoteModal">{$vo.Name}</a></td>
+                        <td>{$vo.Comment}</td>
+                        <td>{$vo.Engine}</td>
+                        <td>{$vo.Collation}</td>
+                        <td>{$vo.Rows}</td>
+                        <td>{$vo.Data_length}</td>
+                        <td>{$vo.Update_time}</td>
+                        <td>{$vo.Data_free}</td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <a href="javascript:ajaxConfirm('{:url('optimize',['ids'=>$vo['Name']])}','优化表',2);" class="btn btn-default" data-bs-toggle="tooltip" title="优化"><i class="mdi mdi-leaf"></i></a>
+                            <a href="javascript:ajaxConfirm('{:url('repair',['ids'=>$vo['Name']])}','修复表',2);" class="btn btn-default" data-bs-toggle="tooltip" title="修复"><i class="mdi mdi-wrench"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                    {/foreach}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
 
 <div id="remoteModal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title"><span class="table"></span> 表结构：</h4>
-            </div>
-            <div class="modal-body">
-                text
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
-            </div>
-        </div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><span class="table"></span> 表结构：</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        text
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+      </div>
     </div>
+  </div>
 </div>
-
-{include file='public/footer.html'}
 
 <script>
     function remoteUrl(url){
@@ -86,36 +113,40 @@
                 $('#remoteModal .modal-body').html('<pre>'+res.data+'</pre>');
             }
         },'json');
-        $('#remoteModal').modal({show:true});
+        var remoteModal = new bootstrap.Modal(document.getElementById('remoteModal'));
+        remoteModal.show();
     }
     function databack() {
         var ids = [];
-        $('tbody input').each(function(index, el) {
+        $('tbody input.ids').each(function(index, el) {
             if($(this).prop('checked')){
-                ids.push($(this).val())
+                ids.push($(this).val());
             }
         });
         var msg = '确认要备份表吗？<br/>'+ids.toString();
         if (ids.length < 1) {
             msg = '确认要备份全部数据吗？';
         }
-        layer.open({content:msg,btn:['确认','取消'],yes:function(index){
-                var bak = layer.open({content:'数据备份中，请耐心等待……', shadeClose: false, type: 2});
-                $.post("{:url('backup')}",{ids:ids.toString()},function(res){
-                    if (res.status === 1) {
-                        layer.close(bak);
-                        toast(res.msg);
-                        setTimeout(function(){
-                            window.location.href = res.url;
-                        },2000);
-                    } else {
-                        toast(res.msg);
-                    }
-                },'json');
-
-                layer.close(index);
-            }
+        var modalHtml = '<div class="modal fade" id="backupModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body">' + msg + '</div><div class="modal-footer"><button type="button" class="btn btn-primary" id="backupBtn">确认</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button></div></div></div></div>';
+        $('body').append(modalHtml);
+        var backupModalEl = document.getElementById('backupModal');
+        var backupModal = new bootstrap.Modal(backupModalEl);
+        $('#backupBtn').on('click', function() {
+            backupModal.hide();
+            toast('数据备份中，请耐心等待……', 30);
+            $.post("{:url('backup')}",{ids:ids.toString()},function(res){
+                if (res.status === 1) {
+                    toast(res.msg);
+                    setTimeout(function(){
+                        window.location.href = res.url;
+                    },2000);
+                } else {
+                    toast(res.msg);
+                }
+            },'json');
         });
+        $(backupModalEl).on('hidden.bs.modal', function() { $(this).remove(); });
+        backupModal.show();
     }
 </script>
 </body>

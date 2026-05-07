@@ -1,58 +1,43 @@
 {include file='public/header.html'}
 
-<div class="container mtn">
-	<div class="panel panel-default mtn">
-		<div class="panel-heading">
-			用户信息<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span>
-		</div>
-		<div class="panel-body">
-			<div class="row">
-				<div class="col-md-3">
-					<div style="text-align:center;margin-top:5px;">
-						<img src="{:get_avatar($vo['avatar'], $vo['qq'])}" width="80" height="80" class="img-circle" alt="avatar"/>
-						<p style="margin-top:15px;"><strong>{$vo.nickname}</strong> v{$vo.level}</p>
-					</div>
-				</div>
-				<div class="col-md-9">
-					<div class="form-horizontal user-profile">
-						<div class="form-group">
-							<label class="col-sm-2 control-label">格言</label>
-							<div class="col-sm-10">
-								<p class="form-control-static">{$vo.bio|default='暂无'}</p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">QQ</label>
-							<div class="col-sm-10">
-								<p class="form-control-static">{$vo.qq|default='暂无'}</p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">邮箱</label>
-							<div class="col-sm-10">
-								<p class="form-control-static">{$vo.email|default='暂无'}</p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">手机</label>
-							<div class="col-sm-10">
-								<p class="form-control-static">{$vo.mobile|default='暂无'}</p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">注册时间</label>
-							<div class="col-sm-10">
-								<p class="form-control-static">{$vo.create_time|date='Y-m-d H:i:s'}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="mdi mdi-account me-2"></i>用户信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-auto text-center text-md-start">
+                            <img src="{:get_avatar($vo['avatar'], $vo['qq'])}" class="rounded-circle" width="80" height="80" alt="avatar" />
+                        </div>
+                        <div class="col">
+                            <h5 class="mb-1">{$vo.nickname} <span class="badge bg-primary ms-1">v{$vo.level}</span></h5>
+                            <p class="text-muted mb-0">{$vo.bio|default='这个人很懒，什么都没写'}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label class="form-label text-muted small">QQ</label>
+                            <p class="mb-0">{$vo.qq|default='-'}</p>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label class="form-label text-muted small">邮箱</label>
+                            <p class="mb-0">{$vo.email|default='-'}</p>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label class="form-label text-muted small">注册时间</label>
+                            <p class="mb-0">{$vo.create_time|date='Y-m-d H:i'}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary"><i class="mdi mdi-arrow-left me-1"></i>返回</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {include file='public/footer.html'}
-</body>
-</html>

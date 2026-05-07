@@ -1,7 +1,32 @@
-<ul class="nav nav-sidebar">
-    <li{:nav_active('index')}><a href="{:url('index/index')}"><i class="glyphicon glyphicon-home"></i> 管理中心</a></li>
-    {php $menu=widget('menu')->get()}
-    {foreach $menu as $nav}
-    <li{:nav_active($nav['sign'])}><a href="{:url($nav['href'])}"><i class="{$nav.icon}"></i> {$nav.title}</a></li>
-    {/foreach}
-</ul>
+<aside class="lyear-layout-sidebar">
+  <div id="logo" class="sidebar-header">
+    <a href="{:url('index/index')}"><img src="__STATIC__/images/logo-sidebar.png" title="{:site('site_name','后台管理')}" alt="{:site('site_name','后台管理')}" /></a>
+  </div>
+  <div class="lyear-layout-sidebar-info lyear-scroll">
+    <nav class="sidebar-main">
+      <ul class="nav-drawer">
+        <li class="nav-item{:nav_active('index', ' active')}">
+          <a href="{:url('index/index')}">
+            <i class="mdi mdi-home-city-outline"></i>
+            <span>管理中心</span>
+          </a>
+        </li>
+        {php $menu=widget('menu')->get()}
+        {foreach $menu as $nav}
+        <li class="nav-item{:nav_active($nav['sign'], ' active')}">
+          <a href="{:url($nav['href'])}">
+            <i class="{$nav.icon}"></i>
+            <span>{$nav.title}</span>
+          </a>
+        </li>
+        {/foreach}
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <p class="copyright">
+        <span>Copyright &copy; {:date('Y')}. </span>
+        <a target="_blank" href="{:site('site_link', 'https://xphp.net')}">{:site('site_name','一鱼PHP框架')}</a>
+      </p>
+    </div>
+  </div>
+</aside>

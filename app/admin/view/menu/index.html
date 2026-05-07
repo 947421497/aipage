@@ -1,24 +1,37 @@
-{include file='public/header.html'}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
-            {include file='public/sidebar.html'}
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
+    </div>
+  </div>
+</div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
 
-            <h3 class="page-header">菜单管理</h3>
-            <div class="panel panel-default">
-                <div class="panel-heading">菜单管理<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span></div>
-                <div class="panel-body">
-                    <a href="{:url('add')}" class="btn btn-primary">添加</a>
-                    <button type="button" class="btn btn-success" onclick="actionConfirm('启用','{:url('state?params=status-1')}');">启用</button>
-                    <button type="button" class="btn btn-info" onclick="actionConfirm('停用','{:url('state?params=status-0')}');">停用</button>
-                    <button type="button" class="btn btn-danger" onclick="actionConfirm('删除', '{:url('del')}');">删除</button>
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">菜单管理</div></header>
+              <div class="card-body">
+                <div class="card-btns mb-2-5">
+                  <a href="{:url('add')}" class="btn btn-primary">添加</a>
+                  <button type="button" class="btn btn-success" onclick="actionConfirm('启用','{:url('state?params=status-1')}');">启用</button>
+                  <button type="button" class="btn btn-info" onclick="actionConfirm('停用','{:url('state?params=status-0')}');">停用</button>
+                  <button type="button" class="btn btn-danger" onclick="actionConfirm('删除', '{:url('del')}');">删除</button>
                 </div>
                 <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <th width="50"><input type="checkbox" onclick="selectAll(this.checked)" /></th>
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th><div class="form-check"><input class="form-check-input" type="checkbox" id="check-all" onclick="selectAll(this.checked)" /></div></th>
                         <th>ID</th>
                         <th>标题</th>
                         <th>链接</th>
@@ -27,39 +40,45 @@
                         <th>排序</th>
                         <th>状态</th>
                         <th>操作</th>
-                        </thead>
-                        <tbody>
-                        {foreach $list as $vo}
-                            <tr>
-                                <td><input type="checkbox" name="ids" value="{$vo.id}" /> </td>
-                                <td>{$vo.id}</td>
-                                <td><a href="{:url('edit',['id'=>$vo['id']])}">{$vo.title}</a></td>
-                                <td>{$vo.href}</td>
-                                <td>{$vo.sign}</td>
-                                <td><i class="{$vo.icon}"></i></td>
-                                <td>{$vo.sort}</td>
-                                <td>
-                                    {if $vo['status']==1:}
-                                        <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',2);" class="btn btn-xs btn-success">已启用</a>
-                                    {else:}
-                                        <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',2);" class="btn btn-xs btn-default">已停用</a>
-                                    {/if}
-                                </td>
-                                <td>
-                                    <a href="{:url('edit',['id'=>$vo['id']])}" class="btn btn-xs btn-primary">编辑</a>
-                                    <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);" class="btn btn-xs btn-danger">删除</a>
-                                </td>
-                            </tr>
-                        {/foreach}
-                        </tbody>
-                    </table>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {foreach $list as $vo}
+                      <tr>
+                        <td><div class="form-check"><input class="form-check-input ids" type="checkbox" name="ids" value="{$vo.id}" /></div></td>
+                        <td>{$vo.id}</td>
+                        <td><a href="{:url('edit',['id'=>$vo['id']])}">{$vo.title}</a></td>
+                        <td>{$vo.href}</td>
+                        <td>{$vo.sign}</td>
+                        <td><i class="{$vo.icon}"></i></td>
+                        <td>{$vo.sort}</td>
+                        <td>
+                          {if $vo['status']==1:}
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',2);" class="btn btn-sm btn-success">已启用</a>
+                          {else:}
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',2);" class="btn btn-sm btn-secondary">已停用</a>
+                          {/if}
+                        </td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <a href="{:url('edit',['id'=>$vo['id']])}" class="btn btn-default" data-bs-toggle="tooltip" title="编辑"><i class="mdi mdi-square-edit-outline"></i></a>
+                            <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);" class="btn btn-default" data-bs-toggle="tooltip" title="删除"><i class="mdi mdi-delete-outline"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                    {/foreach}
+                    </tbody>
+                  </table>
                 </div>
-                <div class="panel-footer">{empty $list->toArray():}暂无记录！{/empty}{$list->links()}</div>
+                {empty $list->toArray():}暂无记录！{/empty}
+                <ul class="pagination">{$list->links()|raw}</ul>
+              </div>
             </div>
-
+          </div>
         </div>
-    </div>
-</div>
-{include file='public/footer.html'}
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
 </body>
 </html>

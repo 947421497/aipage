@@ -1,46 +1,111 @@
-{include file='public/header.html'}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar" id="sidebar">
-            {include file='public/sidebar.html'}
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="main">
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
+    </div>
+  </div>
+</div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
 
-            <h3 class="page-header">网站配置</h3>
-            <div class="panel panel-default">
-                <div class="panel-heading">网站配置<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span></div>
-                <div class="panel-body">
-                    <p>文件位置：<code>app/index/config/site.php</code> 调用方式：<code>site('键名')</code></p>
-                    <button type="button" class="btn btn-info" onclick="ajaxConfirm('{:url('save_file')}','生成配置文件');">生成配置</button>
-                    <code> 注意：修改后须生成配置</code>
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">网站配置</div></header>
+              <div class="card-body">
+
+                <div class="mb-3">
+                  <small class="form-text">文件位置：<code>app/index/config/site.php</code> 调用方式：<code>site('键名')</code></small>
                 </div>
-                <div class="panel-body">
-                    <p>名称 - 键名 - 键值 - 操作</p>
+                <div class="mb-3">
+                  <button type="button" class="btn btn-info me-1" onclick="ajaxConfirm('{:url('save_file')}','生成配置文件');">生成配置</button>
+                  <small class="form-text">注意：修改后须生成配置</small>
+                </div>
+
+                <ul class="nav nav-tabs">
+                  <li class="nav-item">
+                    <button class="nav-link active" id="tab-list" data-bs-toggle="tab" data-bs-target="#config-list" type="button">配置列表</button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link" id="tab-add" data-bs-toggle="tab" data-bs-target="#config-add" type="button">新增配置</button>
+                  </li>
+                </ul>
+
+                <div class="tab-content">
+                  <div class="tab-pane fade show active" id="config-list" aria-labelledby="tab-list">
                     {foreach $list as $vo}
-                    <form id="myform{$vo.id}" method="post" class="submit-ajax" action="{:url('index')}">
-                        <input type="hidden" name="id" value="{$vo.id}"/>
-                        <div class="row" style="margin-bottom:10px;border-bottom: 1px solid #ddd;">
-                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="name" value="{$vo.name}" class="form-control" placeholder="输入名称"/></div>
-                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="config_key" value="{$vo.config_key}" class="form-control" placeholder="输入键名"/></div>
-                            <div class="col-md-8" style="margin-bottom: 5px;"><input type="text" name="config_value" value="{$vo.config_value}" class="form-control" placeholder="请输入值"/></div>
-                            <div class="col-md-2" style="margin-bottom: 5px;"><input type="submit" class="btn btn-primary" value="修改" /> <a href="javascript:ajaxConfirm('{:url('del',['id'=>$vo['id']])}','删除',2);" class="btn btn-danger">删除</a></div>
+                    <form id="myform{$vo.id}" method="post" class="edit-form submit-ajax" action="{:url('index')}">
+                      <input type="hidden" name="id" value="{$vo.id}"/>
+                      <div class="row mb-3 border-bottom pb-3">
+                        <div class="col-md-2">
+                          <label class="form-label" for="name_{$vo.id}">名称</label>
+                          <input type="text" name="name" id="name_{$vo.id}" value="{$vo.name}" class="form-control" placeholder="输入名称"/>
                         </div>
+                        <div class="col-md-2">
+                          <label class="form-label" for="key_{$vo.id}">键名</label>
+                          <input type="text" name="config_key" id="key_{$vo.id}" value="{$vo.config_key}" class="form-control" placeholder="输入键名"/>
+                        </div>
+                        <div class="col-md-5">
+                          <label class="form-label" for="value_{$vo.id}">键值</label>
+                          <input type="text" name="config_value" id="value_{$vo.id}" value="{$vo.config_value}" class="form-control" placeholder="请输入值"/>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label">&nbsp;</label>
+                          <div>
+                            <button type="submit" class="btn btn-primary me-1">修改</button>
+                            <a href="javascript:ajaxConfirm('{:url('del',['id'=>$vo['id']])}','删除',2);" class="btn btn-danger">删除</a>
+                          </div>
+                        </div>
+                      </div>
                     </form>
                     {/foreach}
-                    <form id="myformadd" method="post" class="submit-ajax" action="{:url('index')}">
-                        <div class="row" style="margin-bottom:10px;border-bottom: 1px solid #ddd;">
-                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="name" value="" class="form-control" placeholder="输入名称"/></div>
-                            <div class="col-md-1" style="margin-bottom: 5px;"><input type="text" name="config_key" value="" class="form-control" placeholder="输入键名"/></div>
-                            <div class="col-md-8" style="margin-bottom: 5px;"><input type="text" name="config_value" value="" class="form-control" placeholder="请输入值"/></div>
-                            <div class="col-md-2" style="margin-bottom: 5px;"><input type="submit" class="btn btn-success" value="添加" /></div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    {empty $list:}
+                    <p class="text-center text-muted py-3">暂无配置项</p>
+                    {/empty}
+                  </div>
 
+                  <div class="tab-pane fade" id="config-add" aria-labelledby="tab-add">
+                    <form id="myformadd" method="post" class="edit-form submit-ajax" action="{:url('index')}">
+                      <div class="row mb-3">
+                        <div class="col-md-2">
+                          <label class="form-label" for="add_name">名称</label>
+                          <input type="text" name="name" id="add_name" value="" class="form-control" placeholder="输入名称"/>
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label" for="add_key">键名</label>
+                          <input type="text" name="config_key" id="add_key" value="" class="form-control" placeholder="输入键名"/>
+                        </div>
+                        <div class="col-md-5">
+                          <label class="form-label" for="add_value">键值</label>
+                          <input type="text" name="config_value" id="add_value" value="" class="form-control" placeholder="请输入值"/>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label">&nbsp;</label>
+                          <div>
+                            <button type="submit" class="btn btn-success me-1">添加</button>
+                            <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
-</div>
-{include file='public/footer.html'}
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
 </body>
 </html>

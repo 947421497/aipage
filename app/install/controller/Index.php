@@ -42,7 +42,18 @@ class Index
             file_put_contents($lock_file, date('Y-m-d H:i:s'));
             $this->success('安装成功!默认管理员：admin 密码：admin', __HOST__);
         }
-        return view();
+
+        $backupDirs = [];
+        $backupPath = ROOT_PATH . '/backup';
+        if (is_dir($backupPath)) {
+            $dirs = glob($backupPath . '/bak_*', GLOB_ONLYDIR);
+            foreach ($dirs as $dir) {
+                $backupDirs[] = basename($dir);
+            }
+            sort($backupDirs);
+        }
+
+        return view('', ['backupDirs' => $backupDirs]);
     }
 
     // 清空数据库表(注意备份数据)

@@ -1,56 +1,93 @@
 {include file='public/header.html'}
 
-<div class="container mtn">
-	{include file='user/_top_nav.html'}
+<div class="container py-4 pb-lg-0 pb-5">
+    <div class="row g-4">
+        <!-- 左侧导航 -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="card border-0 shadow-sm position-sticky" style="top:72px;">
+                <div class="card-body text-center py-4 border-bottom">
+                    <img src="{:get_avatar($vo['avatar'], $vo['qq'])}" class="rounded-circle mb-2" width="56" height="56" alt="avatar" />
+                    <h6 class="mb-1">{$vo.nickname} <span class="badge bg-primary rounded-pill" style="font-size:0.7rem;">v{$vo.level}</span></h6>
+                    <p class="text-muted small mb-0">{$vo.bio|default='修改你的个人资料'}</p>
+                </div>
+                <nav class="list-group list-group-flush py-2">
+                    <a href="{:url('user/index')}" class="list-group-item list-group-item-action border-0 rounded-0 px-3 py-2">
+                        <i class="mdi mdi-account-box me-2"></i>个人中心
+                    </a>
+                    <a href="{:url('user/profile')}" class="list-group-item list-group-item-action border-0 rounded-0 px-3 py-2 active">
+                        <i class="mdi mdi-pencil me-2"></i>修改资料
+                    </a>
+                    <a href="{:url('user/password')}" class="list-group-item list-group-item-action border-0 rounded-0 px-3 py-2">
+                        <i class="mdi mdi-lock me-2"></i>修改密码
+                    </a>
+                </nav>
+            </div>
+        </div>
 
-	<div class="panel panel-default mtn">
-		<div class="panel-heading">
-			修改资料<span class="pull-right"><a href="javascript:history.back(-1);">返回</a></span>
-		</div>
-		<div class="panel-body">
-			<form class="form-horizontal submit-ajax" role="form" action="{:url('user/profile')}" method="post">
-				<input type="hidden" name="id" value="{$vo.id}" />
-				<div class="form-group">
-					<label for="nickname" class="col-sm-2 control-label">*昵称</label>
-					<div class="col-sm-10">
-						<input type="text" id="nickname" name="nickname" class="form-control" style="width:auto;" placeholder="请输入昵称" value="{$vo.nickname}" />
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="bio"  class="col-sm-2 control-label">格言</label>
-					<div class="col-sm-10">
-						<input type="text" id="bio" name="bio" class="form-control" style="width:auto;" placeholder="请输入格言" value="{$vo.bio}" />
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="qq" class="col-sm-2 control-label">QQ</label>
-					<div class="col-sm-10">
-						<input type="text" id="qq" name="qq" class="form-control" style="width:auto;" placeholder="请输入QQ号" value="{$vo.qq}" />
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="email" class="col-sm-2 control-label">邮箱</label>
-					<div class="col-sm-10">
-						<input type="text" id="email" name="email" class="form-control" style="width:auto;" placeholder="请输入邮箱" value="{$vo.email}" />
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="mobile" class="col-sm-2 control-label">手机</label>
-					<div class="col-sm-10">
-						<input type="text" id="mobile" name="mobile" class="form-control" style="width:auto;" placeholder="请输入手机号" value="{$vo.mobile}" />
-					</div>
-				</div>
-				<div class="form-group">
-					<label class="col-sm-2 control-label">&nbsp;</label>
-					<div class="col-sm-10">
-						<input type="submit" value="修改" class="btn btn-primary" />
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
+        <!-- 右侧内容 -->
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0"><i class="mdi mdi-pencil me-2 text-success"></i>修改资料</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-lg-none d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded">
+                        <img src="{:get_avatar($vo['avatar'], $vo['qq'])}" class="rounded-circle" width="48" height="48" alt="avatar" />
+                        <div>
+                            <h6 class="mb-0">{$vo.nickname} <span class="badge bg-primary rounded-pill" style="font-size:0.7rem;">v{$vo.level}</span></h6>
+                            <small class="text-muted">修改你的个人资料</small>
+                        </div>
+                    </div>
+                    <form class="site-form submit-ajax" action="{:url('user/profile')}" method="post">
+                        <input type="hidden" name="id" value="{$vo.id}" />
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label for="nickname" class="form-label"><span class="text-danger">*</span> 昵称</label>
+                                <input type="text" id="nickname" name="nickname" class="form-control" placeholder="请输入昵称" value="{$vo.nickname}" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="bio" class="form-label">格言</label>
+                                <input type="text" id="bio" name="bio" class="form-control" placeholder="请输入格言" value="{$vo.bio}" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="qq" class="form-label">QQ</label>
+                                <input type="text" id="qq" name="qq" class="form-control" placeholder="请输入QQ号" value="{$vo.qq}" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="email" class="form-label">邮箱</label>
+                                <input type="email" id="email" name="email" class="form-control" placeholder="请输入邮箱" value="{$vo.email}" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="mobile" class="form-label">手机</label>
+                                <input type="text" id="mobile" name="mobile" class="form-control" placeholder="请输入手机号" value="{$vo.mobile}" />
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary px-4"><i class="mdi mdi-content-save me-1"></i>保存修改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- 移动端底部导航 -->
+<nav class="d-lg-none fixed-bottom bg-white border-top py-2" style="z-index:1040;">
+    <div class="d-flex justify-content-around">
+        <a href="{:url('user/index')}" class="text-muted text-center text-decoration-none px-3">
+            <i class="mdi mdi-account-box d-block fs-5"></i>
+            <small>个人中心</small>
+        </a>
+        <a href="{:url('user/profile')}" class="text-primary text-center text-decoration-none px-3">
+            <i class="mdi mdi-pencil d-block fs-5"></i>
+            <small>修改资料</small>
+        </a>
+        <a href="{:url('user/password')}" class="text-muted text-center text-decoration-none px-3">
+            <i class="mdi mdi-lock d-block fs-5"></i>
+            <small>修改密码</small>
+        </a>
+    </div>
+</nav>
+
 {include file='public/footer.html'}
-</body>
-</html>

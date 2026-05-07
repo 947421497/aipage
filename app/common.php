@@ -19,7 +19,7 @@ function get_avatar(string $avatar = '', string $qq = ''): string
     if (!empty($qq)) {
         return 'http://q1.qlogo.cn/g?b=qq&nk='.$qq.'&s=100&t='.time();
     }
-    return __STATIC__.'/img/avatar.png';
+    return __STATIC__.'/images/avatar.jpg';
 }
 
 // 时间多久之前
