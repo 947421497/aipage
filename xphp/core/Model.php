@@ -391,7 +391,8 @@ abstract class Model implements ArrayAccess, Iterator
         if (method_exists($this, $name)) {
             return $this->$name();
         }
-        return $name;
+        trigger_error("Undefined property: " . static::class . "::{$name}", E_USER_WARNING);
+        return null;
     }
 
     public function __set($name, $value)
