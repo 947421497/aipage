@@ -55,7 +55,6 @@ CREATE TABLE `xphp_user` (
   `mobile` char(11) NOT NULL DEFAULT '' COMMENT '手机号',
   `qq` varchar(20) NOT NULL DEFAULT '' COMMENT 'QQ号',
   `bio` varchar(120) NOT NULL DEFAULT '' COMMENT '个人简介',
-  `gender` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '性别(0未知/1男/2女)',
   `avatar` varchar(200) NOT NULL DEFAULT '' COMMENT '头像',
   `level` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '等级',
   `create_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
@@ -115,7 +114,6 @@ CREATE TABLE `xphp_config` (
 | mobile | char(11) | '' | 手机号码，固定11位中国手机号格式 |
 | qq | varchar(20) | '' | QQ号码，可选字段 |
 | bio | varchar(120) | '' | 个人简介/格言，最大120字符 |
-| gender | tinyint(1) | 0 | 性别：0=未知，1=男，2=女 |
 | avatar | varchar(200) | '' | 头像URL地址，存储头像图片路径 |
 | level | tinyint(1) | 0 | 用户等级，用于会员等级体系 |
 | create_time | int(10) | 0 | 注册时间，Unix时间戳格式 |
@@ -194,7 +192,7 @@ ALTER TABLE `xphp_config` ADD UNIQUE INDEX `idx_config_key` (`config_key`);
 
 ```sql
 INSERT INTO `xphp_user` VALUES 
-(1, 'admin', '0192023a7bbd73250516f069df18b500', '管理员', 'admin@example.com', '', '', '这个人很懒，什么都没写', 0, '', 1, UNIX_TIMESTAMP(), 0);
+(1, 'admin', '0192023a7bbd73250516f069df18b500', '管理员', 'admin@example.com', '', '', '这个人很懒，什么都没写', '', 3, UNIX_TIMESTAMP(), 0);
 ```
 
 > **重要提示**：密码 `0192023a7bbd73250516f069df18b500` 是 `admin123` 的MD5加密值。在生产环境中，请务必在首次登录后立即修改默认密码，并使用强密码策略。
@@ -240,14 +238,6 @@ INSERT INTO `xphp_config` VALUES
 | 0 | 正常 | 用户可正常登录和使用所有功能 |
 | 1 | 禁用 | 账号被禁用，无法登录 |
 
-#### 性别（gender）
-
-| 值 | 说明 |
-|----|------|
-| 0 | 未知 |
-| 1 | 男 |
-| 2 | 女 |
-
 #### 菜单系统标识（is_sys）
 
 | 值 | 说明 | 注意事项 |
@@ -278,7 +268,6 @@ INSERT INTO `xphp_config` VALUES
 │ mobile            │ char(11)     │ 手机号码                               │
 │ qq                │ varchar(20)  │ QQ号码                                │
 │ bio               │ varchar(120) │ 个人简介                              │
-│ gender            │ tinyint(1)   │ 性别                                  │
 │ avatar            │ varchar(200) │ 头像URL                               │
 │ level             │ tinyint(1)   │ 用户等级                              │
 │ create_time       │ int(10)      │ 注册时间                              │
