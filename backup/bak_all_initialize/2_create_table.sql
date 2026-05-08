@@ -33,11 +33,8 @@ CREATE TABLE `xphp_user` (
   `mobile` char(11) NOT NULL DEFAULT '' COMMENT '手机号',
   `qq` varchar(20) NOT NULL DEFAULT '' COMMENT 'QQ号',
   `bio` varchar(120) NOT NULL DEFAULT '' COMMENT '格言',
-  `gender` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '性别1男2女',
   `avatar` varchar(200) NOT NULL DEFAULT '' COMMENT '头像',
   `level` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '等级',
-  `money` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '余额',
-  `score` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '积分',
   `create_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态',
   PRIMARY KEY (`id`)

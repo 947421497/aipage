@@ -15,7 +15,6 @@ class User extends Model
         ['mobile', 'mobile', '手机号格式错误', FV_VALUE, AC_BOTH],
         ['email', 'email', '邮箱格式错误', FV_VALUE, AC_BOTH],
         ['qq', 'qq', 'QQ号格式错误', FV_VALUE, AC_BOTH],
-        ['qq_openid', 'unique', 'openid已绑定', FV_VALUE, AC_BOTH],
     ];
     protected array $auto = [
         ['password', 'setPwd', 'method', FV_VALUE, AC_BOTH],
@@ -26,17 +25,14 @@ class User extends Model
         ['username', FV_ISSET, AC_UPDATE],
         ['password', FV_EMPTY, AC_UPDATE],
     ];
-    // 自动处理加密密码
     public function setPwd(string $val, array $data): string
     {
         return $this->getEncryptPassword($val, $data['username']);
     }
-    // 获取加密密码
     public function getEncryptPassword(string $password, string $salt = ''): string
     {
         return md5(md5($password) . $salt);
     }
-    // 更新之后，更新session中的nickname
     protected function _after_update(array $before, array $after): void
     {
         $user = session('user');
@@ -44,12 +40,10 @@ class User extends Model
             session('user.nickname', $after['nickname']);
         }
     }
-    // 删除之前，设置删除条件id>1和status=0
     protected function _before_delete(array $data): void
     {
         $this->db = $this->db->where('id>1 AND status=0');
     }
-    // 登录逻辑
     public function login(array $req, bool $isAdmin = false): bool
     {
         $rule = [
@@ -80,10 +74,9 @@ class User extends Model
             return false;
         }
         unset($user['password'], $user['status']);
-        session('user', $user); // 存储session
+        session('user', $user);
         return true;
     }
-    // 修改密码逻辑
     public function changePwd(array $req): bool
     {
         $rule = [
