@@ -10,6 +10,11 @@ class Index
     // 安装界面与安装操作
     public function index()
     {
+        $lock_file = ROOT_PATH . '/backup/install.lock';
+        if (file_exists($lock_file)) {
+            $this->error('系统已安装，如需重装请删除 backup/install.lock 文件', 400, __HOST__);
+        }
+
         if ($this->isPost()) {
             $bak_path = dir_init(ROOT_PATH . '/backup', 0777);
             $lock_file = $bak_path . '/install.lock';
