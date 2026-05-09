@@ -13,12 +13,41 @@
         </li>
         {php $menu=widget('menu')->get()}
         {foreach $menu as $nav}
-        <li class="nav-item{:nav_active($nav['sign'], ' active')}">
-          <a href="{:url($nav['href'])}">
+        {if isset($nav['children']):}
+        <li class="nav-item nav-item-has-subnav{:nav_active_tree($nav, ' active')}">
+          <a href="javascript:void(0)">
+            <i class="{$nav.icon}"></i>
+            <span>{$nav.title}</span>
+          </a>
+          <ul class="nav nav-subnav">
+            {foreach $nav['children'] as $sub}
+            {if isset($sub['children']):}
+            <li class="nav-item nav-item-has-subnav{:nav_active_tree($sub, ' active')}">
+              <a href="javascript:void(0)">{$sub.title}</a>
+              <ul class="nav nav-subnav">
+                {foreach $sub['children'] as $third}
+                <li{:nav_active_tree($third, ' class="active"')}>
+                  <a href="{$third.url}">{$third.title}</a>
+                </li>
+                {/foreach}
+              </ul>
+            </li>
+            {else:}
+            <li{:nav_active_tree($sub, ' class="active"')}>
+              <a href="{$sub.url}">{$sub.title}</a>
+            </li>
+            {/if}
+            {/foreach}
+          </ul>
+        </li>
+        {else:}
+        <li class="nav-item{:nav_active_tree($nav, ' active')}">
+          <a href="{$nav.url}">
             <i class="{$nav.icon}"></i>
             <span>{$nav.title}</span>
           </a>
         </li>
+        {/if}
         {/foreach}
       </ul>
     </nav>

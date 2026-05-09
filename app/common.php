@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-// 导航高亮显示
 function nav_active(string $nav, string $class = ' class="active"'): string
 {
     if (str_starts_with($nav, '@')) {
@@ -10,7 +9,18 @@ function nav_active(string $nav, string $class = ' class="active"'): string
     return ($nav == get_controller()) ? $class : '';
 }
 
-// 获取用户头像
+function nav_active_tree(array $nav, string $class = ' active'): string
+{
+    $controller = get_controller();
+    if ($nav['sign'] == $controller) return $class;
+    if (isset($nav['children'])) {
+        foreach ($nav['children'] as $child) {
+            if (nav_active_tree($child, $class) !== '') return $class;
+        }
+    }
+    return '';
+}
+
 function get_avatar(string $avatar = '', string $qq = ''): string
 {
     if (!empty($avatar)) {
@@ -22,7 +32,6 @@ function get_avatar(string $avatar = '', string $qq = ''): string
     return __STATIC__.'/images/avatar.jpg';
 }
 
-// 时间多久之前
 function get_time_ago(int $time): string
 {
     $etime = time() - $time;
@@ -39,7 +48,6 @@ function get_time_ago(int $time): string
     return '刚刚';
 }
 
-// form-select生成
 function form_select(string $name, $options, $selected = '', string $attr = ''): string
 {
     if (!is_array($options)) {
@@ -56,7 +64,6 @@ function form_select(string $name, $options, $selected = '', string $attr = ''):
     return $select . "</select>\n";
 }
 
-// form-radio生成
 function form_radio(string $name, $options, $selected = '', string $attr = '', bool $is_label = true): string
 {
     if (!is_array($options)) {
@@ -76,7 +83,6 @@ function form_radio(string $name, $options, $selected = '', string $attr = '', b
     return $radio;
 }
 
-// 封面上传表单属性
 function pic_attr(string $url = ''): array
 {
     $data = [

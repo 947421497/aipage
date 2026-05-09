@@ -26,12 +26,16 @@
                 </div>
                 <form class="site-form submit-ajax" action="{:url('add')}" method="post">
                   <div class="mb-3">
+                    <label class="form-label">*上级菜单</label>
+                    {:form_select('parent_id', $parentOptions, 0, 'class="form-select"')}
+                  </div>
+                  <div class="mb-3">
                     <label class="form-label" for="title">*标题</label>
                     <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="" />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label" for="href">*链接</label>
-                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法" value="" />
+                    <label class="form-label" for="href">链接</label>
+                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法(一级菜单可留空)" value="" />
                   </div>
                   <div class="mb-3">
                     <label class="form-label" for="sign">*标识</label>

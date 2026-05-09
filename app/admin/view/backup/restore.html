@@ -42,9 +42,9 @@
                         <td>{$vo.name}</td>
                         <td>
                           <div class="btn-group btn-group-sm">
-                            <a href="javascript:restore('{$vo['path']}');" class="btn btn-default" data-bs-toggle="tooltip" title="还原"><i class="mdi mdi-restore"></i></a>
-                            <a href="{:url('bak_down',['path'=>$vo['path']])}" class="btn btn-default" data-bs-toggle="tooltip" title="下载"><i class="mdi mdi-download"></i></a>
-                            <a href="javascript:ajaxConfirm('{:url('bak_del',['path'=>$vo['path']])}','删除',2);" class="btn btn-default" data-bs-toggle="tooltip" title="删除"><i class="mdi mdi-delete-outline"></i></a>
+                            <a href="javascript:restore('{$vo['path']}');" class="btn btn-info">还原</a>
+                            <a href="{:url('bak_down',['path'=>$vo['path']])}" class="btn btn-primary">下载</a>
+                            <a href="javascript:ajaxConfirm('{:url('bak_del',['path'=>$vo['path']])}','删除',2);" class="btn btn-danger">删除</a>
                           </div>
                         </td>
                         <td>{$vo.path}</td>

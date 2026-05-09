@@ -12,6 +12,7 @@ CREATE TABLE `xphp_config` (
 -- 表结构: xphp_menu --
 CREATE TABLE `xphp_menu` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `parent_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '父级ID(0为顶级)',
   `title` varchar(50) NOT NULL DEFAULT '' COMMENT '标题',
   `href` varchar(100) NOT NULL DEFAULT '' COMMENT '链接',
   `sign` varchar(20) NOT NULL DEFAULT '' COMMENT '标识',
@@ -19,8 +20,9 @@ CREATE TABLE `xphp_menu` (
   `is_sys` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0可删1禁删',
   `sort` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '排序',
   `update_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态',
-  PRIMARY KEY (`id`)
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0停用1启用',
+  PRIMARY KEY (`id`),
+  KEY `idx_parent_id` (`parent_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COMMENT='菜单表';
 -- <fen> --
 -- 表结构: xphp_user --

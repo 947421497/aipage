@@ -96,8 +96,8 @@
                         </td>
                         <td>
                           <div class="btn-group btn-group-sm">
-                            <a class="btn btn-default" href="{:url('edit',['id'=>$vo['id']])}" data-bs-toggle="tooltip" title="编辑"><i class="mdi mdi-pencil"></i></a>
-                            <a class="btn btn-default" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);" data-bs-toggle="tooltip" title="删除"><i class="mdi mdi-window-close"></i></a>
+                            <a class="btn btn-primary" href="{:url('edit',['id'=>$vo['id']])}">编辑</a>
+                            <a class="btn btn-danger" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);">删除</a>
                           </div>
                         </td>
                       </tr>

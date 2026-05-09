@@ -65,11 +65,12 @@ CREATE TABLE `xphp_user` (
 
 ### 2. 菜单表（xphp_menu）
 
-菜单表用于存储后台管理系统的多级菜单结构。通过 href、sign、icon 等字段，可以灵活配置菜单的显示和跳转行为。is_sys 字段用于区分系统内置菜单和用户自定义菜单，防止误删系统菜单。
+菜单表用于存储后台管理系统的多级菜单结构，支持最多三级菜单。通过 `parent_id` 字段建立父子关系，`parent_id=0` 表示顶级菜单。通过 `href`、`sign`、`icon` 等字段，可以灵活配置菜单的显示和跳转行为。`is_sys` 字段用于区分系统内置菜单和用户自定义菜单，防止误删系统菜单。
 
 ```sql
 CREATE TABLE `xphp_menu` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `parent_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '父级ID(0为顶级)',
   `title` varchar(50) NOT NULL DEFAULT '' COMMENT '菜单标题',
   `href` varchar(100) NOT NULL DEFAULT '' COMMENT '链接地址',
   `sign` varchar(20) NOT NULL DEFAULT '' COMMENT '菜单标识',
@@ -78,7 +79,8 @@ CREATE TABLE `xphp_menu` (
   `sort` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '排序',
   `update_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0正常/1禁用)',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_parent_id` (`parent_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COMMENT='菜单表';
 ```
 
@@ -124,6 +126,7 @@ CREATE TABLE `xphp_config` (
 | 字段名 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
 | id | smallint(5) | AUTO_INCREMENT | 菜单唯一标识符 |
+| parent_id | smallint(5) | 0 | 父级菜单ID，0表示顶级菜单 |
 | title | varchar(50) | '' | 菜单在后台界面显示的标题 |
 | href | varchar(100) | '' | 点击菜单后跳转的链接地址，格式为控制器/方法 |
 | sign | varchar(20) | '' | 菜单唯一标识符，用于权限验证和菜单定位 |
@@ -131,7 +134,7 @@ CREATE TABLE `xphp_config` (
 | is_sys | tinyint(1) | 0 | 系统菜单标识：0=可删除，1=禁止删除 |
 | sort | int(11) | 0 | 排序权重，数字越大排序越靠前 |
 | update_time | int(10) | 0 | 最后更新时间，Unix时间戳格式 |
-| status | tinyint(1) | 0 | 菜单状态：0=正常显示，1=禁用隐藏 |
+| status | tinyint(1) | 0 | 菜单状态：0=停用，1=启用 |
 
 ### 配置表字段详解
 
@@ -156,6 +159,7 @@ CREATE TABLE `xphp_config` (
 |------|--------|------|------|
 | xphp_user | PRIMARY | id | 主键 |
 | xphp_menu | PRIMARY | id | 主键 |
+| xphp_menu | idx_parent_id | parent_id | 普通索引 |
 | xphp_config | PRIMARY | id | 主键 |
 
 ### 业务索引建议
@@ -199,14 +203,14 @@ INSERT INTO `xphp_user` VALUES
 
 ### 初始化菜单数据
 
-系统会预置常用的后台管理菜单，包括控制台、用户管理、菜单管理、网站配置等模块。
+系统会预置常用的后台管理菜单，包括用户管理、菜单管理、网站配置、数据备份等模块。初始化的菜单均为一级菜单（parent_id=0）。
 
 ```sql
 INSERT INTO `xphp_menu` VALUES 
-(1, '控制台', 'index/index', 'index', 'mdi-view-dashboard', 1, 100, UNIX_TIMESTAMP(), 0),
-(2, '用户管理', 'user/index', 'user', 'mdi-account-multiple', 0, 90, UNIX_TIMESTAMP(), 0),
-(3, '菜单管理', 'menu/index', 'menu', 'mdi-menu', 0, 80, UNIX_TIMESTAMP(), 0),
-(4, '网站配置', 'config/index', 'config', 'mdi-wrench', 0, 70, UNIX_TIMESTAMP(), 0);
+(1, 0, '用户管理', 'user/index', 'user', 'mdi mdi-account', 1, 1070, UNIX_TIMESTAMP(), 1),
+(2, 0, '网站配置', 'config/index', 'config', 'mdi mdi-cog', 1, 1080, UNIX_TIMESTAMP(), 1),
+(3, 0, '菜单管理', 'menu/index', 'menu', 'mdi mdi-menu', 1, 1090, UNIX_TIMESTAMP(), 1),
+(4, 0, '数据备份', 'backup/index', 'backup', 'mdi mdi-content-save', 1, 1100, UNIX_TIMESTAMP(), 1);
 ```
 
 ### 初始化配置数据
@@ -291,10 +295,11 @@ INSERT INTO `xphp_config` VALUES
 │                              xphp_menu                                    │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ id (PK)           │ smallint(5)  │ 菜单唯一标识                          │
-│ title             │ varchar(50)  │ 菜单标题                              │
-│ href              │ varchar(100) │ 链接地址                              │
-│ sign              │ varchar(20)  │ 菜单标识                              │
-│ icon              │ varchar(100) │ 菜单图标                              │
+│ parent_id         │ smallint(5)  │ 父级ID(0为顶级)                       │
+│ title             │ varchar(50)   │ 菜单标题                              │
+│ href              │ varchar(100)  │ 链接地址                              │
+│ sign              │ varchar(20)   │ 菜单标识                              │
+│ icon              │ varchar(100)  │ 菜单图标                              │
 │ is_sys            │ tinyint(1)   │ 系统菜单标识                          │
 │ sort              │ int(11)      │ 排序权重                              │
 │ update_time       │ int(10)      │ 更新时间                              │

@@ -27,11 +27,15 @@
                 <form class="site-form submit-ajax" action="{:url('edit')}" method="post">
                   <input type="hidden" name="id" value="{$vo.id}" />
                   <div class="mb-3">
+                    <label class="form-label">*上级菜单</label>
+                    {:form_select('parent_id', $parentOptions, $vo['parent_id'], 'class="form-select"')}
+                  </div>
+                  <div class="mb-3">
                     <label class="form-label" for="title">*标题</label>
                     <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="{$vo.title}" />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label" for="href">*链接</label>
+                    <label class="form-label" for="href">链接</label>
                     <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法" value="{$vo.href}" />
                   </div>
                   <div class="mb-3">
