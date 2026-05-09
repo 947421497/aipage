@@ -215,18 +215,18 @@ INSERT INTO `xphp_menu` VALUES
 
 ### 初始化配置数据
 
-系统预置了网站基本配置项，涵盖网站名称、标题、关键字、描述、Logo、备案号、版权信息等。
+系统预置了网站基本配置项，包括网站标题、关键词、描述、版权信息、公告等。
 
 ```sql
 INSERT INTO `xphp_config` VALUES 
-(1, '网站名称', 'site_name', '一鱼快速构架', 0, 0),
-(2, '网站标题', 'site_title', 'XPHP Framework', 0, 0),
-(3, '网站关键字', 'site_keyword', 'XPHP,PHP框架,快速开发', 0, 0),
-(4, '网站描述', 'site_desc', '基于XPHP框架的快速开发平台', 0, 0),
-(5, '网站Logo', 'site_logo', '/static/images/logo.png', 0, 0),
-(6, '备案号', 'site_icp', '', 0, 0),
-(7, '版权信息', 'site_copyright', '© 2024 XPHP. All Rights Reserved.', 0, 0),
-(8, '网站状态', 'site_status', '1', 0, 0);
+(1, '网站标题', 'site_title', '一鱼快速构架 · XStart', 0, 1),
+(2, '关键词', 'site_kw', '一鱼PHP框架,无念的编程圈,xphp,PHP框架,MVC框架', 0, 1),
+(3, '网站描述', 'site_desc', '一个超轻量级MVC开发PHP框架', 0, 1),
+(4, '网站版权', 'site_copy', 'XStart_v1.0', 0, 1),
+(5, '版权链接', 'site_link', 'http://xstart.xphp.net', 0, 1),
+(6, '网站公告', 'site_notice', '一鱼框架官网：新域名xphp.net QQ群325825297', 0, 1),
+(7, '首页h1', 'site_h1', 'XStart', 0, 1),
+(8, '首页h2', 'site_h2', '基于XPHP框架开发，包含用户模块和简易后台。', 0, 1);
 ```
 
 ---

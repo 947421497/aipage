@@ -108,7 +108,7 @@
 ### 完整目录树
 
 ```
-/workspace/
+/www/wwwroot/www.a.com/
 ├── app/                          # 应用目录
 │   ├── admin/                     # 后台管理应用
 │   │   ├── command/              # 命令类模板

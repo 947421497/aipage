@@ -335,7 +335,9 @@ DOC/目录存放项目的技术文档，为开发者提供详细的参考资料�
 │   ├── Boot.php                 # 启动中间件
 │   ├── Csrf.php                 # CSRF防护中间件
 │   └── controller/               # 控制器中间件
-│       └── CpAuth.php          # 后台认证中间件
+│       ├── Auth.php            # 前台认证中间件
+│       ├── CpAuth.php          # 后台认证中间件
+│       └── Test.php            # 测试中间件
 ├── public/                       # Web根目录
 │   ├── static/                   # 静态资源
 │   │   ├── css/                # 样式文件

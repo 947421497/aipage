@@ -82,58 +82,53 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-class User
+class User extends Cp
 {
+    protected string $model = 'common.user';
+    protected string $order = 'status DESC,id DESC';
+
+    protected function _where(): array
+    {
+        $where = [];
+        $name = input('name', '', 'clear_html');
+        if (!empty($name)) {
+            $where[] = ['username|nickname', 'like', '%' . $name . '%'];
+        }
+        $level = input('level', 0, 'intval');
+        if ($level > 0) {
+            $where[] = ['level', '=', $level];
+        }
+        return $where;
+    }
+}
+```
+
+Cp 基类控制器已自动实现 index、add、edit、delete、state 等方法，无需手动编写。如果需要自定义控制器方法，注意方法参数需要声明类型：
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace app\admin\controller;
+
+class Menu extends Cp
+{
+    protected string $model = 'menu';
+    protected int $limit = 0;
+
     public function index()
     {
-        return view();
+        $list = \app\admin\model\Menu::getTree();
+        return view()->with('list', $list);
     }
 
-    public function add()
+    public function add(array $req)
     {
-        if (request()->isPost()) {
-            $data = request()->post();
-            $result = $this->validate($data, 'User.add');
-            if ($result !== true) {
-                return $this->error($result);
-            }
-            $model = new \app\admin\model\User();
-            if ($model->save($data)) {
-                return $this->success('添加成功');
-            }
-            return $this->error('添加失败');
+        if ($this->isPost()) {
+            $r = pdo()->trans(fn() => model($this->model)->save($req));
+            $this->_jump(['添加成功', '添加失败'], $r, $this->jumpUrl);
         }
         return view();
-    }
-
-    public function edit()
-    {
-        $id = request()->param('id');
-        $model = \app\admin\model\User::find($id);
-        if (!$model) {
-            return $this->error('记录不存在');
-        }
-        if (request()->isPost()) {
-            $data = request()->post();
-            if ($model->save($data)) {
-                return $this->success('修改成功');
-            }
-            return $this->error('修改失败');
-        }
-        return view('', ['data' => $model]);
-    }
-
-    public function delete()
-    {
-        $id = request()->param('id');
-        $model = \app\admin\model\User::find($id);
-        if (!$model) {
-            return $this->error('记录不存在');
-        }
-        if ($model->delete()) {
-            return $this->success('删除成功');
-        }
-            return $this->error('删除失败');
     }
 }
 ```
@@ -227,24 +222,18 @@ use xphp\core\Model;
 
 class User extends Model
 {
-    protected $name = 'user';
-    protected $pk = 'id';
-    protected $autoWriteTimestamp = true;
-    protected $createTime = 'create_time';
-    protected $updateTime = 'update_time';
-
-    public function getList(array $where = [], int $page = 1, int $limit = 10): array
-    {
-        $query = self::where($where);
-        $total = $query->count();
-        $list = $query->page($page, $limit)->order('id', 'desc')->select();
-        return ['total' => $total, 'list' => $list];
-    }
-
-    public function changeStatus(int $id, int $status): bool
-    {
-        return self::update(['id' => $id, 'status' => $status]) !== false;
-    }
+    protected string $table = 'user';
+    protected string $pk = 'id';
+    protected array $validate = [
+        ['username', 'username|unique', '用户名4-12位|用户名已存在', FV_MUST, AC_INSERT],
+        ['nickname', 'required|unique', '昵称必须|昵称已存在', FV_MUST, AC_BOTH],
+        ['password', 'required', '请输入密码', FV_MUST, AC_INSERT],
+    ];
+    protected array $auto = [
+        ['password', 'setPwd', 'method', FV_VALUE, AC_BOTH],
+        ['level', '1', 'string', FV_MUST, AC_INSERT],
+        ['status', '1', 'string', FV_MUST, AC_INSERT],
+    ];
 }
 ```
 
@@ -492,19 +481,35 @@ class Auth
 <?php
 // config/middleware.php
 return [
-    'global' => [
-        \middleware\Boot::class,
+    // 控制器中间件
+    'controller' => [
+        'auth' => [
+            \middleware\controller\Auth::class, // 前台登录验证
+        ],
+        'cp_auth' => [
+            \middleware\controller\CpAuth::class, // 后台验证
+        ],
     ],
-    'route' => [
-        'admin' => [
-            \middleware\Csrf::class,
-            \middleware\controller\CpAuth::class,
-        ],
-        'index' => [
-            \middleware\controller\Auth::class,
-        ],
+    // 全局中间件
+    'common' => [
+        \middleware\Boot::class, // 框架启动
+    ],
+    // 框架中间件
+    'framework' => [
+        'controller_start' => [], // 控制器开始
+        'database_query' => [], // 查询sql
+        'database_execute' => [], // 执行sql
     ],
 ];
+```
+
+控制器中使用中间件，只需在 Cp 基类中配置 `$middleware` 属性：
+
+```php
+class Cp
+{
+    protected string $middleware = 'cp_auth'; // 后台验证
+}
 ```
 
 ---

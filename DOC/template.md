@@ -159,56 +159,42 @@ foreach 标签用于遍历数组或集合，是模板中使用频率最高的循
 
 ```html
 <!-- 基本遍历 -->
-{foreach $list as $item}
-<p>{$item.username}</p>
+{foreach $list as $vo}
+<p>{$vo.username}</p>
 {/foreach}
 
 <!-- 同时获取键名和值 -->
-{foreach $list as $key => $item}
-<p>{$key} - {$item.name}</p>
+{foreach $list as $key => $vo}
+<p>{$key} - {$vo.name}</p>
 {/foreach}
 
 <!-- 遍历关联数组 -->
-{foreach $user as $field => $value}
+{foreach $nav as $field => $value}
 <p>{$field}: {$value}</p>
 {/foreach}
+
+<!-- 判断数组是否为空 -->
+{empty $list}
+<p>暂无数据</p>
+{else:}
+<p>有数据</p>
+{/empty}
 ```
 
-### volist 循环
+### 循环遍历
 
-volist 标签是 foreach 的增强版本，提供了更多控制选项。可以指定起始位置和循环次数，适合分页展示等场景。offset 属性指定从第几条开始遍历，length 属性指定遍历的记录数量。empty 属性指定当数组为空时输出的内容。
-
-```html
-<!-- 指定范围遍历 -->
-{volist name="list" offset="0" length="10" id="item"}
-<p>{$item.name}</p>
-{/volist}
-
-<!-- 空数据提示 -->
-{volist name="list" id="item" empty="暂无数据"}
-<p>{$item.name}</p>
-{/volist}
-
-<!-- 嵌套循环 -->
-{volist name="categories" id="cat"}
-<h3>{$cat.name}</h3>
-{volist name="$cat.children" id="child"}
-<p>{$child.name}</p>
-{/volist}
-{/volist}
-```
+框架的模板引擎使用简洁的原生 PHP 语法处理循环遍历，无需学习特殊的模板标签。模板中的循环直接使用 PHP 代码实现，灵活性更高。
 
 ### 循环变量
 
-循环结构中可以使用一些特殊变量获取循环的元信息。Think 变量提供当前循环的索引、总数、奇偶性等信息。这些变量在处理表格斑马线、序号显示等场景时非常有用。
+循环结构中可以使用一些特殊变量获取循环的元信息，如数组长度、数组对象等。这些变量直接通过 `$list->toArray()` 或 `$list->links()` 等方法获取。
 
 ```html
-{foreach $list as $item}
-<tr class="{if (Think.get('i') % 2) == 0}even{else}odd{/if}">
-    <td>{$Think.get('i') + 1}</td>
-    <td>{$item.name}</td>
-</tr>
-{/foreach}
+<!-- 获取分页数据总数 -->
+<p>共 {$list->total} 条记录</p>
+
+<!-- 生成分页链接 -->
+{$list->links()|raw}
 ```
 
 ---
@@ -221,13 +207,14 @@ include 标签用于将其他模板文件包含到当前模板中，实现代码
 
 ```html
 <!-- 包含公共头部 -->
-{include file="public/_head" /}
+{include file='public/_head.html'}
 
 <!-- 包含其他控制器的模板 -->
-{include file="user/sidebar" /}
+{include file='user/sidebar.html'}
 
-<!-- 完整路径包含 -->
-{include file="../public/footer.html" /}
+<!-- 带参数的包含（框架支持变量替换） -->
+<!-- 在被包含模板中使用 [item] 占位符 -->
+<div>{include file='public/item.html' [item]=$data /}</div>
 ```
 
 ### 传递变量
@@ -354,14 +341,14 @@ function filter_status($value)
 
 ### php 标签
 
-php 标签允许在模板中直接编写 PHP 代码，应谨慎使用以免破坏模板的结构清晰性。简单的变量计算或判断逻辑可以临时使用 php 标签，但复杂的业务逻辑应该在控制器或模型中处理。
+php 标签允许在模板中直接编写 PHP 代码。框架的模板引擎会解析并执行这些 PHP 代码。这种方式可以处理更复杂的逻辑，但也应谨慎使用以免破坏模板的结构清晰性。
 
 ```html
-<!-- 输出 PHP 表达式结果 -->
-{php} echo date('Y-m-d'); {/php}
+<!-- 执行 PHP 代码 -->
+{php $menu=widget('menu')->get()}
 
-<!-- 变量赋值 -->
-{php} $i = 0; {/php}
+<!-- 使用三元运算符 -->
+<span class="{if $vo['status']==1:}text-success{else:}text-secondary{/if}">
 ```
 
 ### literal 标签
@@ -380,34 +367,4 @@ var config = {
 {/literal}
 ```
 
-### compare 标签
 
-compare 标签是 if 语句的简化形式，适合进行单个条件的判断。name 属性指定要比较的变量，value 属性指定比较的值，type 属性指定比较运算符。这种标签语法更简洁，适合简单的条件渲染场景。
-
-```html
-<!-- 判断是否等于 -->
-{compare name="user.status" value="1" type="eq"}
-<p>禁用状态</p>
-{/compare}
-
-<!-- 判断是否大于 -->
-{compare name="user.level" value="3" type="gt"}
-<p>高级用户</p>
-{/compare}
-```
-
-### range 标签
-
-range 标签用于判断变量值是否在指定范围内，类似 PHP 的 in_array 函数。name 属性指定变量名称，value 属性指定范围数组。当变量值在数组中时，标签内的内容会被输出。
-
-```html
-<!-- 判断状态值 -->
-{range name="user.status" value="1,2,3"}
-<p>有效状态</p>
-{/range}
-
-<!-- 判断权限 -->
-{range name="user.role" value="admin,editor"}
-<p>有管理权限</p>
-{/range}
-```
