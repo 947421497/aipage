@@ -13,37 +13,11 @@
         </li>
         {php $menu=widget('menu')->get()}
         {foreach $menu as $nav}
-        <li class="nav-item nav-item-has-subnav{:nav_active($nav['sign'], ' active open')}">
-          <a href="javascript:;">
+        <li class="nav-item{:nav_active($nav['sign'], ' active')}">
+          <a href="{:url($nav['href'])}">
             <i class="{$nav.icon}"></i>
             <span>{$nav.title}</span>
           </a>
-          <ul class="nav-subnav">
-            {foreach $nav.children as $child}
-            {if !empty($child.children)}
-            <li class="nav-item nav-item-has-subnav{:nav_active($child['sign'], ' active open')}">
-              <a href="javascript:;">
-                <span>{$child.title}</span>
-              </a>
-              <ul class="nav-subnav">
-                {foreach $child.children as $grandchild}
-                <li class="nav-item{:nav_active($grandchild['sign'], ' active')}">
-                  <a href="{:url($grandchild.href)}">
-                    <span>{$grandchild.title}</span>
-                  </a>
-                </li>
-                {/foreach}
-              </ul>
-            </li>
-            {else}
-            <li class="nav-item{:nav_active($child['sign'], ' active')}">
-              <a href="{:url($child.href)}">
-                <span>{$child.title}</span>
-              </a>
-            </li>
-            {/if}
-            {/foreach}
-          </ul>
         </li>
         {/foreach}
       </ul>
