@@ -4,17 +4,17 @@
 
 ### 1.1 项目背景
 
-本项目是基于一鱼 PHP 框架（XPHP Framework）开发的后台管理系统，采用 MVC 架构模式，前端使用 Bootstrap 5 和 jQuery 构建响应式管理界面。项目当前使用 Light Year Admin Template v5 作为前端框架模板，该模板原生支持多级菜单嵌套和手风琴折叠效果。
+本项目是基于一鱼 PHP 框架（XPHP Framework）开发的后台管理系统，采用 MVC 架构模式，前端使用 Bootstrap 5 和 jQuery 构建响应式管理界面。项目当前使用 Light Year Admin Template v5 作为前端框架模板，该模板**原生支持多级菜单嵌套和手风琴折叠效果**。
 
-当前后台菜单系统采用扁平化结构，所有菜单项均为一级菜单，缺乏层级关系和折叠交互功能，无法满足复杂业务系统的导航需求。本次改造旨在利用 Light Year Admin Template v5 原生的多级菜单功能，将现有的扁平菜单升级为支持三级嵌套的树形菜单系统。
+当前后台菜单系统采用扁平化结构，所有菜单项均为一级菜单，缺乏层级关系和折叠交互功能，无法满足复杂业务系统的导航需求。本次改造旨在利用框架原生的多级菜单功能，将现有的扁平菜单升级为支持三级嵌套的树形菜单系统。
 
 ### 1.2 技术栈分析
 
-项目采用的技术栈包括：后端使用 PHP 8.1 及以上版本，框架为自主研发的一鱼 PHP 框架；数据库采用 MySQL 5.6 及以上版本；前端框架为 Bootstrap 5，配合 jQuery 实现交互效果；后台模板使用 Light Year Admin Template v5，该模板基于 Bootstrap 5 构建，原生支持多级侧边栏菜单。
+项目采用的技术栈包括：后端使用 PHP 8.1 及以上版本，框架为自主研发的一鱼 PHP 框架；数据库采用 MySQL 5.6 及以上版本；前端框架为 Bootstrap 5，配合 jQuery 实现交互效果；后台模板使用 Light Year Admin Template v5，该模板基于 Bootstrap 5 构建，原生支持多级侧边栏菜单和手风琴交互。
 
 ### 1.3 改造目标
 
-本次改造的核心目标是将现有的扁平菜单系统升级为支持三级嵌套的树形菜单系统。具体目标包括：利用 Light Year Admin Template v5 原生的侧边栏菜单结构实现三级菜单展示；保留并适配模板原有的手风琴折叠交互效果；调整菜单管理界面支持三级菜单的增删改查操作；确保改造过程不影响现有系统功能的正常运行。
+本次改造的核心目标是将现有的扁平菜单系统升级为支持三级嵌套的树形菜单系统。具体目标包括：利用框架原生的侧边栏菜单结构实现三级菜单展示；直接使用框架内置的手风琴交互效果，无需编写额外 JavaScript；调整菜单管理界面支持三级菜单的增删改查操作；确保改造过程不影响现有系统功能的正常运行。
 
 ## 二、现状分析
 
@@ -22,25 +22,52 @@
 
 当前菜单表 xphp_menu 采用单表设计，各字段定义如下：id 字段为主键自增，使用 smallint 无符号整数类型；title 字段存储菜单显示标题，最大长度 50 个字符；href 字段存储跳转链接地址，格式为控制器/方法；sign 字段为菜单唯一标识符，用于高亮当前菜单；icon 字段存储菜单图标类名；is_sys 字段标识是否为系统菜单，1 表示禁删；sort 字段控制菜单排序权重；update_time 字段存储更新时间戳；status 字段标识菜单状态，1 为启用。
 
-现有表结构缺乏 pid 字段，无法表达菜单项之间的父子关系，所有菜单记录在同一平面上通过 sort 字段控制显示顺序。这种设计在菜单数量较少时足够使用，但当系统功能模块增多时局限性明显。
+现有表结构缺乏 pid 字段，无法表达菜单项之间的父子关系，所有菜单记录在同一平面上通过 sort 字段控制显示顺序。
 
 ### 2.2 当前前端实现
 
 当前侧边栏模板位于 app/admin/view/public/sidebar.html，通过 Widget 组件获取全部启用状态的菜单，以简单的无序列表形式渲染。每个菜单项都是独立的链接，点击即跳转。核心渲染逻辑使用 foreach 循环遍历菜单数组，每个菜单项包含图标和标题标签，点击 href 属性指定的 URL 实现页面跳转。
 
-当前实现存在的主要问题包括：没有菜单分组概念，无法表达功能模块的归属关系；没有折叠展开功能，所有菜单始终平铺展示，占用大量屏幕空间；没有视觉层级区分，一级菜单和功能入口混在一起，用户难以快速定位目标功能。
+当前实现存在的主要问题包括：没有菜单分组概念，无法表达功能模块的归属关系；没有折叠展开功能，所有菜单始终平铺展示；没有视觉层级区分。
 
-### 2.3 当前后端逻辑
+### 2.3 框架内置手风琴实现分析
 
-菜单 Widget 组件位于 app/admin/widget/Menu.php，负责从数据库获取菜单数据并返回给视图层。当前实现仅查询 status=1 的启用菜单记录，按 sort ASC 和 id ASC 排序后直接返回一维数组，不进行任何树形结构构建处理。
+经代码审查发现，框架已在 main.min.js 中内置了手风琴交互功能，无需编写额外 JavaScript 代码。
 
-菜单模型位于 app/admin/model/Menu.php，定义了数据验证规则和自动处理逻辑。验证规则要求 title 为唯一的中文字符串、href 必须符合控制器/方法格式、sign 为唯一字符串、sort 为正数。自动处理逻辑在插入时将 status 字段默认值设为 1。
+框架手风琴的核心实现位于 main.min.js 第 34-72 行，具体逻辑如下：
 
-菜单控制器位于 app/admin/controller/Menu.php，继承自 Cp 基类，使用 $model 属性指定模型名称为 menu。基本的增删改查功能由 Cp 基类提供，控制器层仅需指定模型名称即可实现标准的 CRUD 操作。
+```javascript
+// 侧边栏导航 - 框架内置手风琴效果
+$(document).on('click', '.nav-item-has-subnav > a', function() {
+    $subnavToggle = jQuery( this );
+    $navHasSubnav = $subnavToggle.parent();
+    $topHasSubNav = $subnavToggle.parents('.nav-item-has-subnav').last();
+    $subnav       = $navHasSubnav.find('.nav-subnav').first();
+    $viSubHeight  = $navHasSubnav.siblings().find('.nav-subnav:visible').outerHeight();
+    $scrollBox    = $('.lyear-layout-sidebar-info');
+    
+    // 手风琴效果：关闭同级其他已展开的子菜单
+    $navHasSubnav.siblings().find('.nav-subnav:visible').slideUp(500).parent().removeClass('open');
+    
+    // 切换当前菜单状态
+    $subnav.stop().slideToggle( 300, function() {
+        $navHasSubnav.toggleClass( 'open' );
+        // 自动滚动处理...
+    });
+});
+```
 
-### 2.4 权限控制现状
+框架手风琴的工作原理如下：
 
-权限验证中间件位于 middleware/controller/CpAuth.php，仅检查用户是否登录以及用户等级是否达到 3 级。当前实现中，如果 session 中不存在 user 数据则跳转到登录页面；如果用户等级小于 3 则返回 403 无权限响应。权限控制未与菜单进行关联，无法实现基于角色的菜单可见性控制。
+第一，框架监听 `.nav-item-has-subnav > a` 的点击事件。当用户点击带有子菜单的菜单项时触发处理函数。
+
+第二，框架通过 `$navHasSubnav.siblings().find('.nav-subnav:visible').slideUp(500).parent().removeClass('open')` 实现手风琴效果。这行代码首先找到当前菜单项的同级兄弟元素，然后查找这些兄弟元素下所有可见的 `.nav-subnav` 子菜单，接着使用 slideUp 动画收起这些子菜单，最后移除父级元素的 open 类。
+
+第三，框架通过 `$subnav.stop().slideToggle(300, ...)` 切换当前菜单的展开状态。stop 方法用于停止之前的动画队列，slideToggle 方法以 300 毫秒动画时长切换子菜单的显示状态，toggleClass 方法切换 open 类以控制样式变化。
+
+第四，框架还包含自动滚动处理逻辑。当展开子菜单时，如果子菜单被遮挡，框架会自动计算并滚动侧边栏以确保子菜单可见。
+
+使用框架内置手风琴功能需要遵循以下 HTML 结构规范：带有子菜单的菜单项需要在 `<li>` 标签上添加 `.nav-item-has-subnav` 类名；子菜单容器需要使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签，位于 `.nav-item-has-subnav` 内的第一层。
 
 ## 三、目标分析
 
@@ -56,25 +83,11 @@
 
 #### 3.1.2 手风琴交互效果
 
-Light Year Admin Template v5 原生支持手风琴折叠效果。当用户点击某个一级菜单时，如果此时有其他一级菜单的二级菜单处于展开状态，则自动折叠这些已展开的二级菜单。用户应能清晰感知当前展开的是哪个功能模块，便于快速定位和切换。
+框架原生支持手风琴折叠效果，无需编写额外 JavaScript 代码。当用户点击某个带有子菜单的菜单项时，如果此时有其他同级菜单的子菜单处于展开状态，则自动折叠这些已展开的子菜单。用户应能清晰感知当前展开的是哪个功能模块，便于快速定位和切换。
 
 #### 3.1.3 菜单数据管理
 
-需要提供菜单的增删改查功能，支持选择父级菜单。添加新菜单时应能选择该菜单的父级，顶级菜单则不选择父级。系统应限制最多支持三级嵌套，即只能为二级菜单选择三级菜单作为子菜单，不能无限嵌套。菜单列表应展示层级关系，可通过缩进清晰展示上下级关系。
-
-### 3.2 非功能性需求
-
-#### 3.2.1 性能要求
-
-菜单数据的读取和树形结构构建应在服务器端完成，避免在前端进行复杂的递归处理。菜单数据应支持按需获取，只查询当前用户有权限访问的菜单记录。树形构建算法应高效，对于百级菜单应能在毫秒级完成处理。
-
-#### 3.2.2 兼容性要求
-
-改造应保持与现有系统的向后兼容。现有的单级菜单数据应能平滑迁移到新的三级结构中。菜单管理界面的操作习惯应与现有后台保持一致，降低用户学习成本。
-
-#### 3.2.3 可维护性要求
-
-菜单层级关系应通过数据字段明确表达，便于后续扩展和维护。菜单渲染逻辑应模块化，便于根据需求调整样式和交互。代码应遵循框架的编码规范，保持与项目其他部分的一致性。
+需要提供菜单的增删改查功能，支持选择父级菜单。添加新菜单时应能选择该菜单的父级，顶级菜单则不选择父级。系统应限制最多支持三级嵌套，即只能为二级菜单选择三级菜单作为子菜单，不能无限嵌套。
 
 ## 四、技术方案设计
 
@@ -82,9 +95,7 @@ Light Year Admin Template v5 原生支持手风琴折叠效果。当用户点击
 
 #### 4.1.1 表结构变更
 
-在现有 xphp_menu 表基础上新增 pid 字段（父级 ID），用于建立菜单项之间的父子关系。该字段为无符号小整数类型，默认为 0 表示顶级菜单。为支持更深的层级扩展和未来可能的四级菜单需求，字段类型选用 smallint unsigned 而非 tinyint unsigned。
-
-具体字段变更如下：新增 pid 字段，类型为 smallint unsigned，默认值为 0，注释为“父级 ID，0 表示顶级菜单”；现有数据中 pid 字段默认值设为 0，保持原有菜单的一级菜单属性。
+在现有 xphp_menu 表基础上新增 pid 字段（父级 ID），用于建立菜单项之间的父子关系。该字段为无符号小整数类型，默认为 0 表示顶级菜单。
 
 修改后的建表语句如下：
 
@@ -107,25 +118,17 @@ CREATE TABLE `xphp_menu` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COMMENT='菜单表';
 ```
 
-#### 4.1.2 索引设计
+#### 4.1.2 数据迁移策略
 
-新增 pid 字段后应创建索引以优化基于父级的查询性能。新增的索引包括：idx_pid 索引用于加速查询某父级下的所有子菜单；保留原有的 idx_sign 唯一索引确保菜单标识唯一性；新增 idx_status 索引用于筛选正常状态的菜单记录。
-
-#### 4.1.3 数据迁移策略
-
-现有菜单数据的 pid 字段统一设置为 0，表示这些菜单都是顶级菜单。迁移过程中不对现有数据做任何修改，只新增字段并设置默认值。这样可以确保迁移过程安全可靠，即使出现问题也可以快速回滚。
+现有菜单数据的 pid 字段统一设置为 0，表示这些菜单都是顶级菜单。迁移过程中不对现有数据做任何修改，只新增字段并设置默认值。
 
 ### 4.2 后端逻辑改造
 
 #### 4.2.1 菜单 Widget 组件改造
 
-现有的菜单 Widget 组件位于 app/admin/widget/Menu.php，需要改造为支持树形结构构建。改造后的组件应从数据库获取全部启用状态的菜单记录，然后在 PHP 端完成树形结构的递归构建，最后将构建好的树形数据返回给视图层。
+现有的菜单 Widget 组件位于 app/admin/widget/Menu.php，需要改造为支持树形结构构建。
 
-树形构建算法核心思路如下：首先将全部菜单数据按 ID 建立索引，形成关联数组；然后遍历所有菜单，将每个菜单的引用存入以其父级 ID 为键的临时数组中；最后从 PID 为 0 的顶级菜单开始，递归地将子菜单挂载到父级菜单的 children 属性下。
-
-改造后的 Widget 代码应包含以下要点：设置缓存有效期为 0 表示不缓存，确保菜单变更能即时生效；查询条件为 status=1 表示只获取启用状态的菜单；查询结果按 sort ASC、id ASC 排序，确保同级菜单按设定的顺序显示；树形构建过程在服务端完成，减轻前端处理负担。
-
-具体实现代码如下：
+改造后的 Widget 代码如下：
 
 ```php
 <?php
@@ -174,7 +177,7 @@ class Menu extends Widget
 
 #### 4.2.2 菜单模型验证规则调整
 
-菜单模型位于 app/admin/model/Menu.php，自动验证规则需要相应调整。对于 href 字段的验证规则，一级菜单（PID 为 0）的 href 可以为空，而二级和三级菜单的 href 必须符合控制器/方法的格式。建议将验证规则修改为条件验证。
+菜单模型位于 app/admin/model/Menu.php，需要增加层级验证逻辑。
 
 修改后的模型代码如下：
 
@@ -285,7 +288,7 @@ class Menu extends Model
 
 #### 4.2.3 菜单控制器增强
 
-菜单控制器位于 app/admin/controller/Menu.php，继承自 Cp 基类，基本的 CRUD 功能由基类提供。需要在菜单控制器中添加父级菜单的选择逻辑，为添加和编辑页面提供父级菜单列表数据。
+菜单控制器位于 app/admin/controller/Menu.php，需要增加父级菜单的选择逻辑。
 
 修改后的控制器代码如下：
 
@@ -353,17 +356,17 @@ class Menu extends Cp
 
 ### 4.3 前端界面改造
 
-#### 4.3.1 Light Year Admin Template v5 菜单结构分析
+#### 4.3.1 框架内置手风琴使用说明
 
-Light Year Admin Template v5 原生支持多级侧边栏菜单，其菜单结构采用嵌套的 ul-li 列表实现。典型的一级菜单包含可点击的链接和可选的子菜单容器，二级菜单同样包含链接和可能的子菜单容器，三级菜单为最终的功能入口，不包含子菜单容器。
+框架已在 main.min.js 中内置了完整的手风琴交互功能，只需按照框架要求的 HTML 结构编写菜单即可自动获得手风琴效果。
 
-模板的手风琴效果通过 JavaScript 控制实现。当点击带有子菜单的一级菜单时，JavaScript 会检查其他同级菜单的子菜单是否处于展开状态，如果处于展开状态则自动折叠它们，然后切换当前菜单的展开状态。
+框架要求的 HTML 结构规范如下：带有子菜单的 `<li>` 标签需要添加 `.nav-item-has-subnav` 类名；子菜单容器使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签，位于 `.nav-item-has-subnav` 内的第一层；点击带子菜单的 `<a>` 标签时，框架会自动执行手风琴交互。
 
-模板的样式区分通过 CSS 类名实现。has-submenu 类标识含有子菜单的菜单项；open 类表示菜单处于展开状态；nav-submenu 类用于标识子菜单容器；不同层级通过 padding-left 和字体大小等样式属性实现视觉区分。
+框架手风琴的工作流程如下：点击事件触发后，框架首先查找当前菜单项的同级兄弟元素，然后关闭兄弟元素下所有可见的子菜单，最后切换当前菜单的展开状态并添加动画效果。
 
 #### 4.3.2 侧边栏模板改造
 
-侧边栏模板位于 app/admin/view/public/sidebar.html，需要完全重写以适配 Light Year Admin Template v5 的原生菜单结构。改造后的模板应使用多层无序列表嵌套，外层 ul 表示菜单容器，内层 li 表示单个菜单项，li 内部的 ul.nav-submenu 表示该菜单的子菜单。
+侧边栏模板位于 app/admin/view/public/sidebar.html，需要按照框架规范重写。
 
 具体模板结构如下：
 
@@ -383,22 +386,20 @@ Light Year Admin Template v5 原生支持多级侧边栏菜单，其菜单结构
             <span>管理中心</span>
           </a>
         </li>
-        {php $menu=widget('menu')->get()}
+        {php $menu = widget('menu')->get()}
         {foreach $menu as $nav}
-        <li class="nav-item has-submenu{:nav_active($nav['sign'], ' active open')}">
-          <a href="javascript:;" class="submenu-toggle">
+        <li class="nav-item nav-item-has-subnav{:nav_active($nav['sign'], ' active open')}">
+          <a href="javascript:;">
             <i class="{$nav.icon}"></i>
             <span>{$nav.title}</span>
-            <i class="mdi mdi-chevron-down"></i>
           </a>
-          <ul class="nav-submenu">
+          <ul class="nav-subnav">
             {foreach $nav.children as $child}
-            <li class="nav-item has-submenu{:nav_active($child['sign'], ' active open')}">
-              <a href="javascript:;" class="submenu-toggle">
+            <li class="nav-item nav-item-has-subnav{:nav_active($child['sign'], ' active open')}">
+              <a href="javascript:;">
                 <span>{$child.title}</span>
               </a>
-              {if !empty($child.children)}
-              <ul class="nav-submenu">
+              <ul class="nav-subnav">
                 {foreach $child.children as $grandchild}
                 <li class="nav-item{:nav_active($grandchild['sign'], ' active')}">
                   <a href="{:url($grandchild.href)}">
@@ -407,15 +408,6 @@ Light Year Admin Template v5 原生支持多级侧边栏菜单，其菜单结构
                 </li>
                 {/foreach}
               </ul>
-              {else}
-              <ul class="nav-submenu">
-                <li class="nav-item{:nav_active($child['sign'], ' active')}">
-                  <a href="{:url($child.href)}">
-                    <span>{$child.title}</span>
-                  </a>
-                </li>
-              </ul>
-              {/if}
             </li>
             {/foreach}
           </ul>
@@ -433,210 +425,118 @@ Light Year Admin Template v5 原生支持多级侧边栏菜单，其菜单结构
 </aside>
 ```
 
-#### 4.3.3 菜单样式设计
+模板结构说明如下：
 
-不同层级菜单应通过样式实现视觉区分。一级菜单项保持原有风格，使用较大的图标和粗体标题；左侧 padding 设置为标准尺寸不需要额外缩进；背景色和字体颜色保持模板默认风格。
+第一层结构为管理中心入口，使用 `.nav-item` 类，不带子菜单，点击直接跳转。
 
-二级菜单项通过左侧增加缩进来表现层级关系，padding-left 值应比一级菜单多 16 至 24 像素；字体大小可略小于一级菜单；图标可使用圆点或短横线等小图标代替。
+第二层结构为一级菜单，使用 `.nav-item.nav-item-has-subnav` 类，包含图标和标题。点击时不跳转页面（href="javascript:;"），而是触发框架手风琴展开二级菜单。
 
-三级菜单项的缩进应比二级更多，padding-left 值继续增加 16 至 24 像素；字体大小可进一步缩小。
+第三层结构为二级菜单，同样使用 `.nav-item.nav-item-has-subnav` 类。二级菜单如果有三级子菜单，点击时展开三级菜单；如果没有三级子菜单，点击时跳转到对应页面。
 
-选中状态样式应继承 Light Year Admin Template v5 的 open 类效果，使用主题色背景和白色文字。
+第四层结构为三级菜单，使用 `.nav-item` 类，没有子菜单容器。点击时跳转到对应页面。
 
-#### 4.3.4 手风琴交互实现
+#### 4.3.3 手风琴交互说明
 
-手风琴效果通过 JavaScript 实现，核心逻辑是点击一级菜单时先关闭其他已展开的一级菜单，然后切换当前菜单的展开状态。
+使用框架内置手风琴功能，无需编写任何额外 JavaScript 代码。框架会自动处理以下交互逻辑：
 
-在 public/static/js/main.min.js 中添加或修改以下 JavaScript 代码：
+手风琴效果方面，当用户点击某个一级菜单时，框架会自动关闭其他已展开的一级菜单的子菜单，确保同一时间只有一个一级菜单的子菜单处于展开状态。
 
-```javascript
-$(function() {
-    $('.sidebar-main').on('click', '.submenu-toggle', function(e) {
-        e.preventDefault();
-        var $this = $(this);
-        var $parent = $this.closest('li.has-submenu');
-        var $siblings = $parent.siblings('li.has-submenu');
+展开动画方面，框架使用 slideToggle 方法实现子菜单的展开和收起动画，动画时长为 300 毫秒。
 
-        $siblings.each(function() {
-            var $sibling = $(this);
-            if ($sibling.hasClass('open')) {
-                $sibling.removeClass('open');
-                $sibling.find('> ul.nav-submenu').slideUp(200);
-            }
-        });
+收起动画方面，框架使用 slideUp 方法收起同级其他子菜单，动画时长为 500 毫秒。
 
-        if ($parent.hasClass('open')) {
-            $parent.removeClass('open');
-            $parent.find('> ul.nav-submenu').slideUp(200);
-        } else {
-            $parent.addClass('open');
-            $parent.find('> ul.nav-submenu').slideDown(200);
-        }
-    });
+自动滚动方面，当展开的子菜单可能被遮挡时，框架会自动滚动侧边栏以确保子菜单可见。
 
-    var currentSign = $('.sidebar-main .nav-item.active').closest('li.has-submenu').find('> a.submenu-toggle').text().trim();
-    if (currentSign) {
-        $('.sidebar-main .nav-item.active').closest('li.has-submenu').each(function() {
-            $(this).addClass('open');
-            $(this).parents('li.has-submenu').addClass('open');
-        });
-    }
-});
-```
+### 4.4 菜单管理界面改造
 
-## 五、菜单管理界面改造
+#### 4.4.1 菜单列表页面
 
-### 5.1 菜单列表页面
+菜单列表页面位于 app/admin/view/menu/index.html，需要调整表格列以展示层级关系。列表排序应调整为按 pid ASC、sort ASC、id ASC 排序，确保同一父级下的子菜单相邻显示。
 
-菜单列表页面位于 app/admin/view/menu/index.html，需要调整表格列以展示层级关系。可通过在标题列中通过缩进和前缀表现层级关系，或者增加父级菜单列显示每个菜单的父级菜单名称。
+#### 4.4.2 添加菜单页面
 
-列表排序应调整为按 pid ASC、sort ASC、id ASC 排序，确保同一父级下的子菜单相邻显示，并且按设定的顺序排列。
+添加页面位于 app/admin/view/menu/add.html，需要新增父级菜单选择字段。
 
-### 5.2 添加菜单页面
-
-添加页面位于 app/admin/view/menu/add.html，需要新增父级菜单选择字段。该字段应使用下拉选择框实现，选项包括“顶级菜单”和所有现有菜单项。顶级菜单的 PID 为 0，二级菜单的 PID 为已存在的顶级菜单 ID。
-
-修改后的添加页面表单应包含以下字段：
+修改后的添加页面表单字段如下：
 
 ```html
-<form class="site-form submit-ajax" action="{:url('add')}" method="post">
-  <div class="mb-3">
-    <label class="form-label" for="pid">父级菜单</label>
-    <select class="form-select" id="pid" name="pid">
-      <option value="0">顶级菜单</option>
-      {foreach $parentMenus as $pm}
-      <option value="{$pm.id}">{$pm.title}</option>
-      {/foreach}
-    </select>
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="title">*标题</label>
-    <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="href">链接</label>
-    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法，父级菜单可不填" value="" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="sign">*标识</label>
-    <input type="text" class="form-control" id="sign" name="sign" placeholder="请输入标识" value="" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="icon">图标</label>
-    <input type="text" class="form-control" id="icon" name="icon" placeholder="图标样式" value="mdi mdi-tag" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="sort">*排序</label>
-    <input type="text" class="form-control" id="sort" name="sort" placeholder="请输入排序值" value="100" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label">*禁删</label>
-    {:form_radio('is_sys', ['否', '是'], 0)}
-  </div>
-  <div class="mb-3">
-    <button type="submit" class="btn btn-primary">添加</button>
-    <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
-  </div>
-</form>
+<div class="mb-3">
+  <label class="form-label" for="pid">父级菜单</label>
+  <select class="form-select" id="pid" name="pid">
+    <option value="0">顶级菜单</option>
+    {foreach $parentMenus as $pm}
+    <option value="{$pm.id}">{$pm.title}</option>
+    {/foreach}
+  </select>
+</div>
 ```
 
-### 5.3 编辑菜单页面
+#### 4.4.3 编辑菜单页面
 
-编辑页面位于 app/admin/view/menu/edit.html，同样需要增加父级菜单选择字段。默认值应设置为当前菜单的 PID 值。需要注意的是，编辑菜单时不允许将菜单的父级设置为自己或自己的子级，以避免循环引用问题。服务端应验证提交的父级 ID 不是当前菜单 ID，也不属于当前菜单的子菜单树。
+编辑页面位于 app/admin/view/menu/edit.html，需要增加父级菜单选择字段。默认值应设置为当前菜单的 PID 值。
 
-修改后的编辑页面表单应包含以下字段：
+修改后的编辑页面表单字段如下：
 
 ```html
-<form class="site-form submit-ajax" action="{:url('edit')}" method="post">
-  <input type="hidden" name="id" value="{$vo.id}" />
-  <div class="mb-3">
-    <label class="form-label" for="pid">父级菜单</label>
-    <select class="form-select" id="pid" name="pid">
-      <option value="0" {if $vo.pid==0}selected{/if}>顶级菜单</option>
-      {foreach $parentMenus as $pm}
-      {if $pm.id!=$vo.id}
-      <option value="{$pm.id}" {if $vo.pid==$pm.id}selected{/if}>{$pm.title}</option>
-      {/if}
-      {/foreach}
-    </select>
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="title">*标题</label>
-    <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="{$vo.title}" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="href">链接</label>
-    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法，父级菜单可不填" value="{$vo.href}" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="sign">*标识</label>
-    <input type="text" class="form-control" id="sign" name="sign" placeholder="请输入标识" value="{$vo.sign}" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="icon">图标</label>
-    <input type="text" class="form-control" id="icon" name="icon" placeholder="图标样式" value="{$vo.icon}" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="sort">*排序</label>
-    <input type="text" class="form-control" id="sort" name="sort" placeholder="请输入排序值" value="{$vo.sort}" />
-  </div>
-  <div class="mb-3">
-    <label class="form-label">*禁删</label>
-    {:form_radio('is_sys', ['否', '是'], $vo['is_sys'])}
-  </div>
-  <div class="mb-3">
-    <button type="submit" class="btn btn-primary">修改</button>
-    <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
-  </div>
-</form>
+<div class="mb-3">
+  <label class="form-label" for="pid">父级菜单</label>
+  <select class="form-select" id="pid" name="pid">
+    <option value="0" {if $vo.pid==0}selected{/if}>顶级菜单</option>
+    {foreach $parentMenus as $pm}
+    {if $pm.id!=$vo.id}
+    <option value="{$pm.id}" {if $vo.pid==$pm.id}selected{/if}>{$pm.title}</option>
+    {/if}
+    {/foreach}
+  </select>
+</div>
 ```
 
-## 六、文件变更清单
+## 五、文件变更清单
 
-### 6.1 数据库文件
+### 5.1 数据库文件
 
-需要修改的数据库相关文件位于 backup/bak_all_initialize/ 目录下。2_create_table.sql 文件需要添加 pid 字段的表结构定义，作为安装初始化使用；3_insert_xphp_menu_part1.sql 文件中的菜单数据需要调整，为现有菜单设置 pid=0 表示顶级菜单。
+需要修改的数据库相关文件位于 backup/bak_all_initialize/ 目录下。2_create_table.sql 文件需要添加 pid 字段的表结构定义，作为安装初始化使用。
 
-### 6.2 PHP 后端文件
+### 5.2 PHP 后端文件
 
-需要修改的 PHP 后端文件包括：app/admin/model/Menu.php 文件需要调整 href 字段的验证规则以支持一级菜单 href 可为空，增加层级深度验证和循环引用验证；app/admin/widget/Menu.php 文件需要重写菜单数据获取逻辑，增加树形结构构建功能；app/admin/controller/Menu.php 文件需要增加获取父级菜单列表的方法，为表单提供父级选择数据。
+需要修改的 PHP 后端文件包括：app/admin/model/Menu.php 文件需要调整验证规则以支持一级菜单 href 可为空，增加层级深度验证和循环引用验证；app/admin/widget/Menu.php 文件需要重写菜单数据获取逻辑，增加树形结构构建功能；app/admin/controller/Menu.php 文件需要增加获取父级菜单列表的方法，为表单提供父级选择数据。
 
-### 6.3 视图模板文件
+### 5.3 视图模板文件
 
-需要修改的视图模板文件包括：app/admin/view/public/sidebar.html 文件需要完全重写，实现三级嵌套菜单结构，适配 Light Year Admin Template v5 的原生菜单格式；app/admin/view/menu/index.html 文件需要调整列表展示，可选增加父级菜单列或层级缩进显示；app/admin/view/menu/add.html 文件需要增加父级菜单选择下拉框；app/admin/view/menu/edit.html 文件需要增加父级菜单选择下拉框并设置当前值为默认选项。
+需要修改的视图模板文件包括：app/admin/view/public/sidebar.html 文件需要按照框架规范重写，实现三级嵌套菜单结构；app/admin/view/menu/add.html 文件需要增加父级菜单选择下拉框；app/admin/view/menu/edit.html 文件需要增加父级菜单选择下拉框并设置当前值为默认选项。
 
-### 6.4 静态资源文件
+### 5.4 静态资源文件
 
-需要新增或修改的静态资源文件位于 public/static/ 目录下。public/static/js/main.min.js 文件需要增加手风琴交互的 JavaScript 代码，参考 Light Year Admin Template v5 的实现方式。
+本次改造**无需修改任何静态资源文件**，框架已内置手风琴交互功能，只需按照规范编写 HTML 结构即可。
 
-## 七、测试验证计划
+## 六、测试验证计划
 
-### 7.1 功能测试用例
+### 6.1 功能测试用例
 
 功能测试应覆盖以下场景：添加顶级菜单并验证其正确显示在侧边栏顶部；添加二级菜单并验证其正确挂载到对应的一级菜单下；添加三级菜单并验证其正确挂载到对应的二级菜单下；验证最多只能添加三级菜单，无法创建四级菜单；验证手风琴效果，点击一级菜单时其他已展开的菜单正确折叠；验证当前菜单高亮功能，根据当前访问的 URL 正确显示 active 状态。
 
-### 7.2 数据完整性测试
+### 6.2 交互效果测试
 
-数据完整性测试应覆盖以下场景：编辑菜单的父级时验证不能设置为自身或子级；删除菜单时验证其子菜单的处理方式，可选择一并删除或阻止删除；禁用菜单时验证其子菜单的显示状态。
+交互效果测试应覆盖以下场景：点击一级菜单时验证子菜单以动画形式展开；点击一级菜单时验证同级其他菜单的子菜单正确收起；展开子菜单后验证自动滚动功能正常工作；不同浏览器下动画效果是否一致。
 
-### 7.3 兼容性测试
+### 6.3 兼容性测试
 
 兼容性测试应覆盖以下场景：现有数据库迁移后原有菜单是否正常显示；新增菜单功能与现有功能是否冲突；不同浏览器下菜单样式和交互是否正常。
 
-## 八、实施注意事项
+## 七、实施注意事项
 
-### 8.1 数据库修改范围
+### 7.1 关于 JavaScript
+
+本次改造**不需要编写任何 JavaScript 代码**。框架已在 main.min.js 中内置了完整的手风琴交互功能，只需按照框架要求的 HTML 结构编写菜单即可。框架自动处理点击事件、动画效果、手风琴逻辑和自动滚动。
+
+### 7.2 HTML 结构规范
+
+必须严格遵循框架的 HTML 结构规范，否则手风琴功能无法正常工作。关键点包括：带有子菜单的 `<li>` 必须添加 `.nav-item-has-subnav` 类名；子菜单容器必须使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签。
+
+### 7.3 数据库修改范围
 
 本次改造的数据库修改仅涉及备份文件，不直接修改生产数据库。用户需通过重新安装系统的方式完成数据库初始化。如果系统已上线运行，需要先备份现有数据库，然后导出菜单数据，修改备份 SQL 文件，执行修改后的 SQL 完成数据库升级。
 
-### 8.2 向后兼容性
+### 7.4 向后兼容性
 
-菜单表新增的 pid 字段默认值为 0，这意味着现有菜单记录在改造后仍被视为顶级菜单，不需要额外的数据迁移工作。菜单 Widget 的 get 方法返回数据结构从一维数组变为嵌套的树形数组，前端模板需要相应调整以适配新数据结构。
-
-### 8.3 性能考虑
-
-树形结构构建在服务端完成后一次性返回，减少前端处理量。菜单数据可根据实际需求决定是否启用缓存，在菜单变更频繁时建议保持不缓存以确保实时性。
-
-### 8.4 扩展性预留
-
-虽然本次改造明确限制为三级菜单，但数据库字段设计已为可能的四级菜单扩展预留空间。如果未来需要支持更多层级，只需修改前端模板和菜单层级限制逻辑，数据库结构无需变更。
+菜单表新增的 pid 字段默认值为 0，这意味着现有菜单记录在改造后仍被视为顶级菜单，不需要额外的数据迁移工作。
