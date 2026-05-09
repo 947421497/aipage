@@ -4,7 +4,7 @@
 
 ### 1.1 项目背景
 
-本项目是基于一鱼 PHP 框架（XPHP Framework）开发的后台管理系统，采用 MVC 架构模式，前端使用 Bootstrap 5 和 jQuery 构建响应式管理界面。项目当前使用 Light Year Admin Template v5 作为前端框架模板，该模板**原生支持多级菜单嵌套和手风琴折叠效果**。
+本项目是基于一鱼 PHP 框架（XPHP Framework）开发的后台管理系统，采用 MVC 架构模式，前端使用 Bootstrap 5 和 jQuery 构建响应式管理界面。项目当前使用 Light Year Admin Template v5 作为前端框架模板，该模板原生支持多级菜单嵌套和手风琴折叠效果。
 
 当前后台菜单系统采用扁平化结构，所有菜单项均为一级菜单，缺乏层级关系和折叠交互功能，无法满足复杂业务系统的导航需求。本次改造旨在利用框架原生的多级菜单功能，将现有的扁平菜单升级为支持三级嵌套的树形菜单系统。
 
@@ -32,42 +32,9 @@
 
 ### 2.3 框架内置手风琴实现分析
 
-经代码审查发现，框架已在 main.min.js 中内置了手风琴交互功能，无需编写额外 JavaScript 代码。
+经代码审查发现，框架已在 main.min.js 中内置了手风琴交互功能。框架手风琴的核心实现监听 `.nav-item-has-subnav > a` 的点击事件，当用户点击带有子菜单的菜单项时触发处理函数。框架通过 `$navHasSubnav.siblings().find('.nav-subnav:visible').slideUp(500).parent().removeClass('open')` 实现手风琴效果，自动关闭同级其他已展开的子菜单。框架通过 `$subnav.stop().slideToggle(300, ...)` 切换当前菜单的展开状态。
 
-框架手风琴的核心实现位于 main.min.js 第 34-72 行，具体逻辑如下：
-
-```javascript
-// 侧边栏导航 - 框架内置手风琴效果
-$(document).on('click', '.nav-item-has-subnav > a', function() {
-    $subnavToggle = jQuery( this );
-    $navHasSubnav = $subnavToggle.parent();
-    $topHasSubNav = $subnavToggle.parents('.nav-item-has-subnav').last();
-    $subnav       = $navHasSubnav.find('.nav-subnav').first();
-    $viSubHeight  = $navHasSubnav.siblings().find('.nav-subnav:visible').outerHeight();
-    $scrollBox    = $('.lyear-layout-sidebar-info');
-    
-    // 手风琴效果：关闭同级其他已展开的子菜单
-    $navHasSubnav.siblings().find('.nav-subnav:visible').slideUp(500).parent().removeClass('open');
-    
-    // 切换当前菜单状态
-    $subnav.stop().slideToggle( 300, function() {
-        $navHasSubnav.toggleClass( 'open' );
-        // 自动滚动处理...
-    });
-});
-```
-
-框架手风琴的工作原理如下：
-
-第一，框架监听 `.nav-item-has-subnav > a` 的点击事件。当用户点击带有子菜单的菜单项时触发处理函数。
-
-第二，框架通过 `$navHasSubnav.siblings().find('.nav-subnav:visible').slideUp(500).parent().removeClass('open')` 实现手风琴效果。这行代码首先找到当前菜单项的同级兄弟元素，然后查找这些兄弟元素下所有可见的 `.nav-subnav` 子菜单，接着使用 slideUp 动画收起这些子菜单，最后移除父级元素的 open 类。
-
-第三，框架通过 `$subnav.stop().slideToggle(300, ...)` 切换当前菜单的展开状态。stop 方法用于停止之前的动画队列，slideToggle 方法以 300 毫秒动画时长切换子菜单的显示状态，toggleClass 方法切换 open 类以控制样式变化。
-
-第四，框架还包含自动滚动处理逻辑。当展开子菜单时，如果子菜单被遮挡，框架会自动计算并滚动侧边栏以确保子菜单可见。
-
-使用框架内置手风琴功能需要遵循以下 HTML 结构规范：带有子菜单的菜单项需要在 `<li>` 标签上添加 `.nav-item-has-subnav` 类名；子菜单容器需要使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签，位于 `.nav-item-has-subnav` 内的第一层。
+使用框架内置手风琴功能需要遵循以下 HTML 结构规范：带有子菜单的 `<li>` 标签需要添加 `.nav-item-has-subnav` 类名；子菜单容器使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签，位于 `.nav-item-has-subnav` 内的第一层。
 
 ## 三、目标分析
 
@@ -83,11 +50,11 @@ $(document).on('click', '.nav-item-has-subnav > a', function() {
 
 #### 3.1.2 手风琴交互效果
 
-框架原生支持手风琴折叠效果，无需编写额外 JavaScript 代码。当用户点击某个带有子菜单的菜单项时，如果此时有其他同级菜单的子菜单处于展开状态，则自动折叠这些已展开的子菜单。用户应能清晰感知当前展开的是哪个功能模块，便于快速定位和切换。
+框架原生支持手风琴折叠效果，无需编写额外 JavaScript 代码。当用户点击某个带有子菜单的菜单项时，如果此时有其他同级菜单的子菜单处于展开状态，则自动折叠这些已展开的子菜单。
 
 #### 3.1.3 菜单数据管理
 
-需要提供菜单的增删改查功能，支持选择父级菜单。添加新菜单时应能选择该菜单的父级，顶级菜单则不选择父级。系统应限制最多支持三级嵌套，即只能为二级菜单选择三级菜单作为子菜单，不能无限嵌套。
+需要提供菜单的增删改查功能，支持选择父级菜单。添加新菜单时应能选择该菜单的父级，顶级菜单则不选择父级。系统应限制最多支持三级嵌套。
 
 ## 四、技术方案设计
 
@@ -111,10 +78,7 @@ CREATE TABLE `xphp_menu` (
   `sort` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '排序权重',
   `update_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0正常/1禁用)',
-  PRIMARY KEY (`id`),
-  KEY `idx_pid` (`pid`),
-  KEY `idx_status` (`status`),
-  KEY `idx_sign` (`sign`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COMMENT='菜单表';
 ```
 
@@ -122,13 +86,15 @@ CREATE TABLE `xphp_menu` (
 
 现有菜单数据的 pid 字段统一设置为 0，表示这些菜单都是顶级菜单。迁移过程中不对现有数据做任何修改，只新增字段并设置默认值。
 
+迁移步骤如下：首先备份现有数据，然后使用 ALTER TABLE 语句添加 pid 字段，最后验证迁移结果。
+
 ### 4.2 后端逻辑改造
 
 #### 4.2.1 菜单 Widget 组件改造
 
 现有的菜单 Widget 组件位于 app/admin/widget/Menu.php，需要改造为支持树形结构构建。
 
-改造后的 Widget 代码如下：
+改造后的完整代码如下：
 
 ```php
 <?php
@@ -163,10 +129,10 @@ class Menu extends Widget
         foreach ($items as $id => $item) {
             if ($item['pid'] == 0) {
                 $tree[] = &$items[$id];
+            } elseif (isset($items[$item['pid']])) {
+                $items[$item['pid']]['children'][] = &$items[$id];
             } else {
-                if (isset($items[$item['pid']])) {
-                    $items[$item['pid']]['children'][] = &$items[$id];
-                }
+                $tree[] = &$items[$id];
             }
         }
 
@@ -175,11 +141,13 @@ class Menu extends Widget
 }
 ```
 
+树形构建算法说明如下：首先将全部菜单数据按 ID 建立索引，形成关联数组；然后为每个菜单项初始化空的 children 数组；接着从 PID 为 0 的顶级菜单开始，将子菜单挂载到父级菜单的 children 属性下；对于孤立节点（父级不存在），将其降级为顶级菜单处理；最后返回构建好的树形结构。
+
 #### 4.2.2 菜单模型验证规则调整
 
 菜单模型位于 app/admin/model/Menu.php，需要增加层级验证逻辑。
 
-修改后的模型代码如下：
+改造后的完整代码如下：
 
 ```php
 <?php
@@ -193,8 +161,8 @@ class Menu extends Model
     protected string $pk = 'id';
 
     protected array $validate = [
-        ['title', 'chs_alpha_num|unique', '标题格式错误|标题已存在', FV_MUST, AC_BOTH],
-        ['sign', 'string|unique', '标识格式错误|标识已存在', FV_MUST, AC_BOTH],
+        ['title', 'chs_alpha_num|length:1,50', '标题格式错误|标题长度需在1-50字符', FV_MUST, AC_BOTH],
+        ['sign', 'string|length:1,20|unique', '标识格式错误|标识长度需在1-20字符|标识已存在', FV_MUST, AC_BOTH],
         ['sort', 'number', '排序值为正数', FV_MUST, AC_BOTH],
         ['pid', 'number', '父级ID格式错误', FV_MUST, AC_BOTH],
     ];
@@ -220,9 +188,6 @@ class Menu extends Model
 
     protected function validateHref(array $data): void
     {
-        if (empty($data['pid']) && !empty($data['href'])) {
-            halt('顶级菜单不需要填写链接地址');
-        }
         if (!empty($data['pid']) && empty($data['href'])) {
             halt('子级菜单必须填写链接地址');
         }
@@ -234,7 +199,7 @@ class Menu extends Model
             $parent = $this->find($data['pid']);
             if ($parent) {
                 $depth = $this->getDepth($parent);
-                if ($depth >= 2) {
+                if ($depth >= 3) {
                     halt('最多只能创建三级菜单');
                 }
             }
@@ -243,12 +208,12 @@ class Menu extends Model
 
     protected function getDepth(array $menu): int
     {
-        $depth = 0;
+        $depth = 1;
         $pid = $menu['pid'] ?? 0;
-        while ($pid > 0 && $depth < 10) {
+        while ($pid > 0 && $depth < 100) {
             $parent = $this->find($pid);
-            if ($parent) {
-                $pid = $parent['pid'] ?? 0;
+            if ($parent && isset($parent['pid'])) {
+                $pid = $parent['pid'];
                 $depth++;
             } else {
                 break;
@@ -265,11 +230,13 @@ class Menu extends Model
 
         $checkId = $data['pid'];
         $targetId = $data['id'];
+        $visited = [$targetId];
 
         while ($checkId > 0) {
-            if ($checkId == $targetId) {
-                halt('不能将菜单的父级设置为自己或自己的子级');
+            if (in_array($checkId, $visited)) {
+                halt('检测到循环引用，禁止操作');
             }
+            $visited[] = $checkId;
             $parent = $this->find($checkId);
             if ($parent) {
                 $checkId = $parent['pid'] ?? 0;
@@ -281,16 +248,22 @@ class Menu extends Model
 
     protected function _before_delete(array $data): void
     {
+        $hasChildren = db('menu')->where('pid', $data['id'])->count();
+        if ($hasChildren > 0) {
+            halt('存在子菜单，请先删除子菜单');
+        }
         $this->db = $this->db->where('status=0 AND is_sys=0');
     }
 }
 ```
 
+验证规则说明如下：validateHref 方法检查子级菜单必须填写链接地址，顶级菜单的链接地址可留空；validateDepth 方法通过 getDepth 获取父级的深度，如果父级深度已达三级（depth >= 3），则禁止创建子菜单；validateCircular 方法检测循环引用，通过 visited 数组记录已访问的节点，防止死循环和循环引用问题；_before_delete 方法在删除前检查是否存在子菜单，如果存在则禁止删除。
+
 #### 4.2.3 菜单控制器增强
 
 菜单控制器位于 app/admin/controller/Menu.php，需要增加父级菜单的选择逻辑。
 
-修改后的控制器代码如下：
+改造后的完整代码如下：
 
 ```php
 <?php
@@ -315,19 +288,38 @@ class Menu extends Cp
 
     public function edit(int $id)
     {
-        $this->assignParentMenus();
+        $this->assignParentMenus($id);
         return parent::edit($id);
     }
 
-    protected function assignParentMenus(): void
+    protected function assignParentMenus(int $excludeId = 0): void
     {
         $menus = model('menu')
             ->where('status=1')
+            ->where('id', '<>', $excludeId)
             ->order('pid ASC, sort ASC, id ASC')
             ->select();
 
-        $tree = $this->buildSelectTree($menus);
+        if ($excludeId > 0) {
+            $excludeIds = $this->getAllChildIds($excludeId);
+            $menus = array_filter($menus, function ($menu) use ($excludeIds) {
+                return !in_array($menu['id'], $excludeIds);
+            });
+        }
+
+        $tree = $this->buildSelectTree(array_values($menus));
         view()->with('parentMenus', $tree);
+    }
+
+    protected function getAllChildIds(int $pid): array
+    {
+        $ids = [];
+        $children = model('menu')->where('pid', $pid)->column('id');
+        foreach ($children as $childId) {
+            $ids[] = $childId;
+            $ids = array_merge($ids, $this->getAllChildIds($childId));
+        }
+        return $ids;
     }
 
     protected function buildSelectTree(array $menus, int $pid = 0, int $level = 0): array
@@ -354,21 +346,19 @@ class Menu extends Cp
 }
 ```
 
+控制器逻辑说明如下：assignParentMenus 方法为表单提供父级菜单选择数据，参数 excludeId 用于在编辑时排除自身及其子级；getAllChildIds 方法递归获取指定菜单的所有子级 ID，用于在编辑时过滤不可选的父级选项；buildSelectTree 方法构建用于下拉选择的扁平树结构，使用缩进前缀区分层级。
+
 ### 4.3 前端界面改造
 
 #### 4.3.1 框架内置手风琴使用说明
 
-框架已在 main.min.js 中内置了完整的手风琴交互功能，只需按照框架要求的 HTML 结构编写菜单即可自动获得手风琴效果。
-
-框架要求的 HTML 结构规范如下：带有子菜单的 `<li>` 标签需要添加 `.nav-item-has-subnav` 类名；子菜单容器使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签，位于 `.nav-item-has-subnav` 内的第一层；点击带子菜单的 `<a>` 标签时，框架会自动执行手风琴交互。
-
-框架手风琴的工作流程如下：点击事件触发后，框架首先查找当前菜单项的同级兄弟元素，然后关闭兄弟元素下所有可见的子菜单，最后切换当前菜单的展开状态并添加动画效果。
+框架已在 main.min.js 中内置了完整的手风琴交互功能，只需按照框架要求的 HTML 结构编写菜单即可自动获得手风琴效果。框架要求的 HTML 结构规范包括：带有子菜单的 `<li>` 标签需要添加 `.nav-item-has-subnav` 类名；子菜单容器使用 `<ul>` 标签并添加 `.nav-subnav` 类名；点击触发元素必须是 `<a>` 标签，位于 `.nav-item-has-subnav` 内的第一层。
 
 #### 4.3.2 侧边栏模板改造
 
 侧边栏模板位于 app/admin/view/public/sidebar.html，需要按照框架规范重写。
 
-具体模板结构如下：
+改造后的完整代码如下：
 
 ```html
 <aside class="lyear-layout-sidebar">
@@ -395,6 +385,7 @@ class Menu extends Cp
           </a>
           <ul class="nav-subnav">
             {foreach $nav.children as $child}
+            {if !empty($child.children)}
             <li class="nav-item nav-item-has-subnav{:nav_active($child['sign'], ' active open')}">
               <a href="javascript:;">
                 <span>{$child.title}</span>
@@ -409,6 +400,13 @@ class Menu extends Cp
                 {/foreach}
               </ul>
             </li>
+            {else}
+            <li class="nav-item{:nav_active($child['sign'], ' active')}">
+              <a href="{:url($child.href)}">
+                <span>{$child.title}</span>
+              </a>
+            </li>
+            {/if}
             {/foreach}
           </ul>
         </li>
@@ -425,27 +423,7 @@ class Menu extends Cp
 </aside>
 ```
 
-模板结构说明如下：
-
-第一层结构为管理中心入口，使用 `.nav-item` 类，不带子菜单，点击直接跳转。
-
-第二层结构为一级菜单，使用 `.nav-item.nav-item-has-subnav` 类，包含图标和标题。点击时不跳转页面（href="javascript:;"），而是触发框架手风琴展开二级菜单。
-
-第三层结构为二级菜单，同样使用 `.nav-item.nav-item-has-subnav` 类。二级菜单如果有三级子菜单，点击时展开三级菜单；如果没有三级子菜单，点击时跳转到对应页面。
-
-第四层结构为三级菜单，使用 `.nav-item` 类，没有子菜单容器。点击时跳转到对应页面。
-
-#### 4.3.3 手风琴交互说明
-
-使用框架内置手风琴功能，无需编写任何额外 JavaScript 代码。框架会自动处理以下交互逻辑：
-
-手风琴效果方面，当用户点击某个一级菜单时，框架会自动关闭其他已展开的一级菜单的子菜单，确保同一时间只有一个一级菜单的子菜单处于展开状态。
-
-展开动画方面，框架使用 slideToggle 方法实现子菜单的展开和收起动画，动画时长为 300 毫秒。
-
-收起动画方面，框架使用 slideUp 方法收起同级其他子菜单，动画时长为 500 毫秒。
-
-自动滚动方面，当展开的子菜单可能被遮挡时，框架会自动滚动侧边栏以确保子菜单可见。
+模板结构说明如下：第一层结构为管理中心入口，使用 `.nav-item` 类，不带子菜单，点击直接跳转；第二层结构为一级菜单，使用 `.nav-item.nav-item-has-subnav` 类，包含图标和标题，点击时不跳转页面而是触发框架手风琴展开二级菜单；第三层结构为二级菜单，根据是否有三级子菜单决定渲染方式，有三级时使用 `.nav-item-has-subnav` 触发展开，没有三级时直接渲染为跳转链接；第四层结构为三级菜单，使用 `.nav-item` 类，没有子菜单容器，点击时跳转到对应页面。
 
 ### 4.4 菜单管理界面改造
 
@@ -457,39 +435,174 @@ class Menu extends Cp
 
 添加页面位于 app/admin/view/menu/add.html，需要新增父级菜单选择字段。
 
-修改后的添加页面表单字段如下：
+改造后的完整代码如下：
 
 ```html
-<div class="mb-3">
-  <label class="form-label" for="pid">父级菜单</label>
-  <select class="form-select" id="pid" name="pid">
-    <option value="0">顶级菜单</option>
-    {foreach $parentMenus as $pm}
-    <option value="{$pm.id}">{$pm.title}</option>
-    {/foreach}
-  </select>
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
+    </div>
+  </div>
 </div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
+
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">添加菜单</div></header>
+              <div class="card-body">
+                <div class="alert alert-light">
+                  可用图标：<a href="https://pictogrammers.com/library/mdi/" target="_blank">https://pictogrammers.com/library/mdi/</a>
+                </div>
+                <form class="site-form submit-ajax" action="{:url('add')}" method="post">
+                  <div class="mb-3">
+                    <label class="form-label" for="pid">父级菜单</label>
+                    <select class="form-select" id="pid" name="pid">
+                      <option value="0">顶级菜单</option>
+                      {foreach $parentMenus as $pm}
+                      <option value="{$pm.id}">{$pm.title}</option>
+                      {/foreach}
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="title">*标题</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="href">链接</label>
+                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法，父级菜单可不填" value="" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="sign">*标识</label>
+                    <input type="text" class="form-control" id="sign" name="sign" placeholder="请输入标识" value="" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="icon">*图标</label>
+                    <input type="text" class="form-control" id="icon" name="icon" placeholder="图标样式" value="mdi mdi-tag" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="sort">*排序</label>
+                    <input type="text" class="form-control" id="sort" name="sort" placeholder="请输入排序值" value="100" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">*禁删</label>
+                    {:form_radio('is_sys', ['否', '是'], 0)}
+                  </div>
+                  <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">添加</button>
+                    <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
+</body>
+</html>
 ```
 
 #### 4.4.3 编辑菜单页面
 
-编辑页面位于 app/admin/view/menu/edit.html，需要增加父级菜单选择字段。默认值应设置为当前菜单的 PID 值。
+编辑页面位于 app/admin/view/menu/edit.html，需要增加父级菜单选择字段。
 
-修改后的编辑页面表单字段如下：
+改造后的完整代码如下：
 
 ```html
-<div class="mb-3">
-  <label class="form-label" for="pid">父级菜单</label>
-  <select class="form-select" id="pid" name="pid">
-    <option value="0" {if $vo.pid==0}selected{/if}>顶级菜单</option>
-    {foreach $parentMenus as $pm}
-    {if $pm.id!=$vo.id}
-    <option value="{$pm.id}" {if $vo.pid==$pm.id}selected{/if}>{$pm.title}</option>
-    {/if}
-    {/foreach}
-  </select>
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
+    </div>
+  </div>
 </div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
+
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">修改菜单</div></header>
+              <div class="card-body">
+                <div class="alert alert-light">
+                  可用图标：<a href="https://pictogrammers.com/library/mdi/" target="_blank">https://pictogrammers.com/library/mdi/</a>
+                </div>
+                <form class="site-form submit-ajax" action="{:url('edit')}" method="post">
+                  <input type="hidden" name="id" value="{$vo.id}" />
+                  <div class="mb-3">
+                    <label class="form-label" for="pid">父级菜单</label>
+                    <select class="form-select" id="pid" name="pid">
+                      <option value="0" {if $vo.pid==0}selected{/if}>顶级菜单</option>
+                      {foreach $parentMenus as $pm}
+                      {if $pm.id!=$vo.id}
+                      <option value="{$pm.id}" {if $vo.pid==$pm.id}selected{/if}>{$pm.title}</option>
+                      {/if}
+                      {/foreach}
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="title">*标题</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="{$vo.title}" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="href">链接</label>
+                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法，父级菜单可不填" value="{$vo.href}" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="sign">*标识</label>
+                    <input type="text" class="form-control" id="sign" name="sign" placeholder="请输入标识" value="{$vo.sign}" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="icon">*图标</label>
+                    <input type="text" class="form-control" id="icon" name="icon" placeholder="图标样式" value="{$vo.icon}" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="sort">*排序</label>
+                    <input type="text" class="form-control" id="sort" name="sort" placeholder="请输入排序值" value="{$vo.sort}" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">*禁删</label>
+                    {:form_radio('is_sys', ['否', '是'], $vo['is_sys'])}
+                  </div>
+                  <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">修改</button>
+                    <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
+</body>
+</html>
 ```
+
+编辑页面特殊处理说明如下：编辑页面在循环父级选项时排除了自身（$pm.id != $vo.id），防止将自己设为父级；在删除菜单前会检查是否存在子菜单，如果存在则禁止删除。
 
 ## 五、文件变更清单
 
@@ -507,17 +620,17 @@ class Menu extends Cp
 
 ### 5.4 静态资源文件
 
-本次改造**无需修改任何静态资源文件**，框架已内置手风琴交互功能，只需按照规范编写 HTML 结构即可。
+本次改造无需修改任何静态资源文件，框架已内置手风琴交互功能，只需按照规范编写 HTML 结构即可。
 
 ## 六、测试验证计划
 
 ### 6.1 功能测试用例
 
-功能测试应覆盖以下场景：添加顶级菜单并验证其正确显示在侧边栏顶部；添加二级菜单并验证其正确挂载到对应的一级菜单下；添加三级菜单并验证其正确挂载到对应的二级菜单下；验证最多只能添加三级菜单，无法创建四级菜单；验证手风琴效果，点击一级菜单时其他已展开的菜单正确折叠；验证当前菜单高亮功能，根据当前访问的 URL 正确显示 active 状态。
+功能测试应覆盖以下场景：添加顶级菜单并验证其正确显示在侧边栏顶部；添加二级菜单并验证其正确挂载到对应的一级菜单下；添加三级菜单并验证其正确挂载到对应的二级菜单下；验证最多只能添加三级菜单，无法创建四级菜单；验证手风琴效果，点击一级菜单时其他已展开的菜单正确折叠；验证当前菜单高亮功能，根据当前访问的 URL 正确显示 active 状态；验证循环引用检测，尝试将菜单的父级设为其子级时应报错；验证删除保护，尝试删除有子菜单的菜单时应报错。
 
-### 6.2 交互效果测试
+### 6.2 数据完整性测试
 
-交互效果测试应覆盖以下场景：点击一级菜单时验证子菜单以动画形式展开；点击一级菜单时验证同级其他菜单的子菜单正确收起；展开子菜单后验证自动滚动功能正常工作；不同浏览器下动画效果是否一致。
+数据完整性测试应覆盖以下场景：编辑菜单时验证自身和子级不会出现在父级选项中；删除菜单时验证其子菜单的处理方式；禁用菜单时验证其子菜单的显示状态。
 
 ### 6.3 兼容性测试
 
@@ -527,7 +640,7 @@ class Menu extends Cp
 
 ### 7.1 关于 JavaScript
 
-本次改造**不需要编写任何 JavaScript 代码**。框架已在 main.min.js 中内置了完整的手风琴交互功能，只需按照框架要求的 HTML 结构编写菜单即可。框架自动处理点击事件、动画效果、手风琴逻辑和自动滚动。
+本次改造不需要编写任何 JavaScript 代码。框架已在 main.min.js 中内置了完整的手风琴交互功能，只需按照框架要求的 HTML 结构编写菜单即可。框架自动处理点击事件、动画效果、手风琴逻辑和自动滚动。
 
 ### 7.2 HTML 结构规范
 
@@ -540,3 +653,11 @@ class Menu extends Cp
 ### 7.4 向后兼容性
 
 菜单表新增的 pid 字段默认值为 0，这意味着现有菜单记录在改造后仍被视为顶级菜单，不需要额外的数据迁移工作。
+
+### 7.5 安全性说明
+
+本次改造包含以下安全措施：层级深度验证确保最多只能创建三级菜单；循环引用检测防止形成死循环；删除保护确保有子菜单的菜单不能被直接删除；字段长度限制防止恶意输入。
+
+### 7.6 性能说明
+
+树形结构在服务端构建后一次性返回，减少前端处理量。对于菜单数量较少的场景（小于 100 个），性能影响可忽略不计。
