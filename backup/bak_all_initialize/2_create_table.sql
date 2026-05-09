@@ -12,6 +12,7 @@ CREATE TABLE `xphp_config` (
 -- 表结构: xphp_menu --
 CREATE TABLE `xphp_menu` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `pid` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '父级ID，0表示顶级菜单',
   `title` varchar(50) NOT NULL DEFAULT '' COMMENT '标题',
   `href` varchar(100) NOT NULL DEFAULT '' COMMENT '链接',
   `sign` varchar(20) NOT NULL DEFAULT '' COMMENT '标识',

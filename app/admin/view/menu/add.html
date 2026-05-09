@@ -26,12 +26,21 @@
                 </div>
                 <form class="site-form submit-ajax" action="{:url('add')}" method="post">
                   <div class="mb-3">
+                    <label class="form-label" for="pid">父级菜单</label>
+                    <select class="form-select" id="pid" name="pid">
+                      <option value="0">顶级菜单</option>
+                      {foreach $parentMenus as $pm}
+                      <option value="{$pm.id}">{$pm.title}</option>
+                      {/foreach}
+                    </select>
+                  </div>
+                  <div class="mb-3">
                     <label class="form-label" for="title">*标题</label>
                     <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="" />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label" for="href">*链接</label>
-                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法" value="" />
+                    <label class="form-label" for="href">链接</label>
+                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法，父级菜单可不填" value="" />
                   </div>
                   <div class="mb-3">
                     <label class="form-label" for="sign">*标识</label>

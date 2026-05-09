@@ -27,12 +27,23 @@
                 <form class="site-form submit-ajax" action="{:url('edit')}" method="post">
                   <input type="hidden" name="id" value="{$vo.id}" />
                   <div class="mb-3">
+                    <label class="form-label" for="pid">父级菜单</label>
+                    <select class="form-select" id="pid" name="pid">
+                      <option value="0" {if $vo.pid==0}selected{/if}>顶级菜单</option>
+                      {foreach $parentMenus as $pm}
+                      {if $pm.id!=$vo.id}
+                      <option value="{$pm.id}" {if $vo.pid==$pm.id}selected{/if}>{$pm.title}</option>
+                      {/if}
+                      {/foreach}
+                    </select>
+                  </div>
+                  <div class="mb-3">
                     <label class="form-label" for="title">*标题</label>
                     <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="{$vo.title}" />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label" for="href">*链接</label>
-                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法" value="{$vo.href}" />
+                    <label class="form-label" for="href">链接</label>
+                    <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法，父级菜单可不填" value="{$vo.href}" />
                   </div>
                   <div class="mb-3">
                     <label class="form-label" for="sign">*标识</label>
