@@ -83,15 +83,23 @@ class Backup
             $type = 't' . count($tables) . '_' . substr($tables[0], strlen($this->prefix));
         }
         $path = $this->bakPath . '/bak_' . $type . '_' . date('YmdHis') . '_' . rand(1000, 9999);
-        if (!is_dir($path)) {
-            mkdir($path, 0777, true);
-        }
+
         $this->_bak_lock();
-        $this->_bak_drop_table($tables, $path);
-        $this->_bak_create_table($tables, $path);
-        $this->_bak_insert_table($tables, $path);
-        $this->_bak_unlock();
-        $this->success('备份成功', 'restore');
+        register_shutdown_function([$this, '_bak_unlock']);
+
+        try {
+            if (!is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+            $this->_bak_drop_table($tables, $path);
+            $this->_bak_create_table($tables, $path);
+            $this->_bak_insert_table($tables, $path);
+            $this->_bak_unlock();
+            $this->success('备份成功', 'restore');
+        } catch (\Throwable $e) {
+            $this->_bak_unlock();
+            $this->error('备份失败：' . $e->getMessage());
+        }
     }
 
     private function _bak_lock(string $file = 'backup.lock'): void

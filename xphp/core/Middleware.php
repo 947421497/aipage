@@ -41,7 +41,7 @@ class Middleware
     public function add(string $name, array $middleware): mixed
     {
         $config = Config::init();
-        $web = $config->get('middleware.' . $name . $name, []);
+        $web = $config->get('middleware.' . $name, []);
         return $config->set('middleware.' . $name, array_merge($web, $middleware));
     }
 

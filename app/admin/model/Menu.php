@@ -7,6 +7,12 @@ class Menu extends Model
 {
     protected string $table = 'menu';
     protected string $pk = 'id';
+    protected static int $maxDepth = 3;
+
+    public static function setMaxDepth(int $depth): void
+    {
+        self::$maxDepth = $depth;
+    }
 
     protected array $validate = [
         ['title', 'chs_alpha_num|unique', '标题格式错误|标题已存在', FV_MUST, AC_BOTH],
@@ -78,7 +84,7 @@ class Menu extends Model
         $result = [];
         foreach ($list as $item) {
             if ((int)$item['parent_id'] === $parentId && (int)$item['id'] !== $excludeId) {
-                if ($depth >= 2) continue;
+                if ($depth >= 9) continue;
                 $prefix = str_repeat('　├ ', $depth);
                 $item['html'] = $prefix;
                 $result[] = $item;

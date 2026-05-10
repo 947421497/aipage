@@ -214,7 +214,7 @@ class Route
             return $_SERVER['HTTP_REFERER'] ?? 'javascript:history.back(-1);';
         }
         if ($suffix == '*') {
-            $suffix = $this->config['url_auto_suffix'] ?? '.html';
+            $suffix = $this->conf['url_auto_suffix'] ?? '.html';
         }
         if (str_starts_with($uri, '@')) {
             $suffix = str_contains($uri, '.') ? '' : $suffix;

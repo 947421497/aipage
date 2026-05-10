@@ -15,17 +15,17 @@ trait Jump
 {
     protected bool $isApi = false;
 
-    protected function success(string|array $msg = '', string $url = ''): void
+    protected function success(string|array $msg = '', string $url = '', ?array $data = null): void
     {
-        $this->_msg($msg, 200, $url);
+        $this->_msg($msg, 200, $url, $data);
     }
 
-    protected function error(string|array $msg = '', int $code = 400, ?string $url = null): void
+    protected function error(string|array $msg = '', int $code = 400, ?string $url = null, ?array $data = null): void
     {
-        $this->_msg($msg, $code, $url);
+        $this->_msg($msg, $code, $url, $data);
     }
 
-    protected function _jump(string|array $info, $status = 1, ?string $url = null): void
+    protected function _jump(string|array $info, $status = 1, ?string $url = null, ?array $data = null): void
     {
         if (is_array($info)) {
             [$msg200, $msg400] = $info;
@@ -34,10 +34,10 @@ trait Jump
         }
         $code = !$status ? 400 : 200;
         $msg = !$status ? $msg400 : $msg200;
-        $this->_msg($msg, $code, $url);
+        $this->_msg($msg, $code, $url, $data);
     }
 
-    protected function _msg(string|array $msg = '', int $code = 400, ?string $url = null): never
+    protected function _msg(string|array $msg = '', int $code = 400, ?string $url = null, ?array $data = null): never
     {
         if (is_array($msg)) {
             $msg = current($msg);
@@ -46,7 +46,7 @@ trait Jump
             $msg = Config::init()->get('response.code_msg.' . $code, 'Error...');
         }
         if (IS_CLI) {
-            $this->_json($code, $msg);
+            $this->_json($code, $msg, $data);
         }
         if (!is_null($url) && !IS_CLI) {
             $url = Route::init()->buildUrl($url);
@@ -54,9 +54,12 @@ trait Jump
             $url = ($code < 400) ? '' : 'javascript:history.back(-1);';
         }
         if ($this->isAjax()) {
-            $this->_json($code, $msg, null, ['url' => $url]);
+            $this->_json($code, $msg, $data, ['url' => $url]);
         }
         $vars = ['status' => ($code < 400) ? 1 : 0, 'msg' => $msg, 'url' => $url];
+        if ($data !== null) {
+            $vars['data'] = $data;
+        }
         header('Content-type: text/html; charset=utf-8');
         echo View::init()->fetch('public/jump', $vars);
         exit();

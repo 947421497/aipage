@@ -27,6 +27,9 @@ class User extends Model
     ];
     public function setPwd(string $val, array $data): string
     {
+        if (empty($val)) {
+            return $data['password'] ?? '';
+        }
         return $this->getEncryptPassword($val, $data['username']);
     }
     public function getEncryptPassword(string $password, string $salt = ''): string
