@@ -103,7 +103,7 @@ class User extends Cp
 }
 ```
 
-Cp 基类控制器已自动实现 index、add、edit、delete、state 等方法，无需手动编写。如果需要自定义控制器方法，注意方法参数需要声明类型：
+Cp 基类控制器已自动实现 index、add、edit、del、state 等方法，无需手动编写。如果需要自定义控制器方法，注意方法参数需要声明类型：
 
 ```php
 <?php
@@ -125,7 +125,9 @@ class Menu extends Cp
     public function add(array $req)
     {
         if ($this->isPost()) {
-            $r = pdo()->trans(fn() => model($this->model)->save($req));
+            $r = pdo()->trans(function () use ($req) {
+                model($this->model)->save($req);
+            });
             $this->_jump(['添加成功', '添加失败'], $r, $this->jumpUrl);
         }
         return view();
@@ -135,30 +137,24 @@ class Menu extends Cp
 
 ### 请求处理
 
-框架提供统一的请求处理机制，通过 request() 函数获取当前请求实例。请求实例封装了 GET、POST、PUT、DELETE 等各种请求方式的数据，并提供了便捷的数据获取方法。开发者应优先使用请求实例来获取用户提交的数据，而不是直接访问 $_GET、$_POST 等超全局变量。
+框架提供统一的请求处理机制，通过 `input()` 助手函数获取请求参数。请求实例封装了 GET、POST、PUT、DELETE 等各种请求方式的数据，并提供了便捷的数据获取方法。开发者应优先使用 `input()` 函数来获取用户提交的数据，而不是直接访问 `$_GET`、`$_POST` 等超全局变量。
 
 #### 获取请求数据
 
-使用 request()->param() 方法可以获取所有请求参数，包括 GET 和 POST 请求的参数。该方法支持默认值设置，当参数不存在时返回默认值。使用 request()->isPost() 方法可以判断当前请求是否为 POST 请求，使用 request()->isGet() 方法可以判断是否为 GET 请求。文件上传通过 request()->file() 方法获取上传的文件信息。
+框架提供统一的请求处理机制，通过 `input()` 助手函数获取请求参数。开发者应优先使用 `input()` 函数来获取用户提交的数据，而不是直接访问 `$_GET`、`$_POST` 等超全局变量。使用 `$this->isPost()` 方法判断当前请求是否为 POST 请求。
 
 ```php
-// 获取所有参数
-$params = request()->param();
-
-// 获取指定参数，带默认值
-$id = request()->param('id', 0, 'intval');
-$name = request()->param('name', '');
-
-// 获取多个参数
-$only = request()->only(['id', 'name']);
-$except = request()->except(['password']);
+// 获取指定参数，带默认值和过滤
+$id = input('id', 0, 'intval');
+$name = input('name', '', 'clear_html');
 
 // 判断请求类型
-if (request()->isPost()) {
-    $data = request()->post();
-} else {
-    $data = request()->param();
+if ($this->isPost()) {
+    $data = input('post.');
 }
+
+// 获取所有参数
+$params = input();
 ```
 
 #### 响应处理
@@ -174,12 +170,8 @@ return view('', ['data' => $data]);
 // 返回JSON
 return json(['code' => 0, 'msg' => 'success', 'data' => $data]);
 
-// 页面跳转
-return redirect('/admin/user/index');
-
-// 操作结果反馈
-return $this->success('操作成功');
-return $this->error('操作失败');
+// 页面跳转（Cp基类中使用 _jump 方法）
+$this->_jump(['操作成功', '操作失败'], $result, $this->jumpUrl);
 ```
 
 ### 路由与URL
@@ -243,28 +235,28 @@ class User extends Model
 
 #### 查询操作
 
-使用 where() 方法添加查询条件，支持多种条件表达式。field() 方法指定要查询的字段，默认为全部字段。order() 方法指定排序规则，page() 方法实现分页查询。limit() 方法限制返回记录数量，find() 方法返回单条记录，select() 方法返回记录集合。
+使用 where() 方法添加查询条件，支持多种条件表达式。field() 方法指定要查询的字段，默认为全部字段。order() 方法指定排序规则，paginate() 方法实现分页查询。limit() 方法限制返回记录数量，find() 方法返回单条记录，select() 方法返回记录集合。
 
 ```php
 // 查询单条记录
-$user = User::find(1);
-$user = User::where('username', 'admin')->find();
+$user = model('common.user')->find(1);
+$user = db('user')->where('username', 'admin')->find();
 
 // 查询多条记录
-$list = User::where('status', 0)->select();
-$list = User::where('level', '>=', 1)->order('id', 'desc')->select();
+$list = db('user')->where('status', 1)->select();
+$list = db('user')->where('level', '>=', 1)->order('id', 'desc')->select();
 
 // 条件查询
-$list = User::where('status', 0)->where('level', '>', 0)->select();
-$list = User::where('id', 'in', [1, 2, 3])->select();
-$list = User::where('username', 'like', '%admin%')->select();
+$list = db('user')->where('status', 1)->where('level', '>', 0)->select();
+$list = db('user')->where('id', 'in', [1, 2, 3])->select();
+$list = db('user')->where('username', 'like', '%admin%')->select();
 
 // 统计查询
-$count = User::where('status', 0)->count();
-$maxId = User::max('id');
+$count = db('user')->where('status', 1)->count();
+$maxId = db('user')->max('id');
 
 // 分页查询
-$list = User::page(1, 20)->select();
+$list = model('common.user')->paginate(10);
 ```
 
 #### 新增操作
@@ -272,25 +264,20 @@ $list = User::page(1, 20)->select();
 使用 save() 方法可以新增单条记录，该方法会自动判断是插入还是更新。insert() 方法用于批量插入数据，insertGetId() 方法在插入后返回自增 ID。save() 方法接收数组或模型实例数据，自动处理时间戳字段。
 
 ```php
-// 新增单条
-$user = new User();
-$user->username = 'test';
-$user->nickname = '测试用户';
-$user->password = md5('123456');
-$user->save();
+// 使用模型新增
+$user = model('common.user');
+$user->save([
+    'username' => 'test',
+    'nickname' => '测试用户',
+    'password' => '123456',
+]);
 
-// 使用静态方法新增
-User::create([
+// 使用 db 助手函数
+db('user')->insert([
     'username' => 'test2',
     'nickname' => '测试用户2',
     'password' => md5('123456'),
     'create_time' => time()
-]);
-
-// 批量新增
-User::insert([
-    ['username' => 'u1', 'nickname' => '用户1'],
-    ['username' => 'u2', 'nickname' => '用户2'],
 ]);
 ```
 
@@ -300,16 +287,12 @@ User::insert([
 
 ```php
 // 更新模型实例
-$user = User::find(1);
-$user->nickname = '新昵称';
-$user->save();
+$user = model('common.user')->find(1);
+$user->save(['nickname' => '新昵称']);
 
-// 静态方法更新
-User::where('id', 1)->update(['nickname' => '新昵称']);
-User::where('status', 0)->update(['status' => 1]);
-
-// 更新或新增
-User::update(['id' => 1, 'nickname' => '新昵称']);
+// 使用 db 助手函数更新
+db('user')->where('id', 1)->update(['nickname' => '新昵称']);
+db('user')->where('status', 0)->update(['status' => 1]);
 ```
 
 #### 删除操作
@@ -318,15 +301,11 @@ User::update(['id' => 1, 'nickname' => '新昵称']);
 
 ```php
 // 删除模型实例
-$user = User::find(1);
-$user->delete();
+$user = model('common.user')->find(1);
+$user->del();
 
-// 删除指定记录
-User::destroy(1);
-User::destroy([1, 2, 3]);
-
-// 条件删除
-User::where('status', 1)->delete();
+// 使用 db 助手函数条件删除
+db('user')->where('status', 0)->delete();
 ```
 
 ---
@@ -369,18 +348,18 @@ User::where('status', 1)->delete();
                             </tr>
                         </thead>
                         <tbody>
-                            {volist name="list" id="item"}
+                            {foreach $list as $item}
                             <tr>
                                 <td>{$item.id}</td>
                                 <td>{$item.username}</td>
                                 <td>{$item.nickname}</td>
-                                <td>{$item.status ? '禁用' : '正常'}</td>
+                                <td>{if $item.status == 1:}正常{else:}停用{/if}</td>
                                 <td>
                                     <a href="{:url('edit', ['id' => $item.id])}">编辑</a>
                                     <a href="javascript:;" onclick="deleteConfirm({$item.id})">删除</a>
                                 </td>
                             </tr>
-                            {/volist}
+                            {/foreach}
                         </tbody>
                     </table>
                 </div>
@@ -444,31 +423,22 @@ User::where('status', 1)->delete();
 <?php
 declare(strict_types=1);
 
-namespace middleware;
+namespace middleware\controller;
 
-use xphp\core\Request;
-use xphp\core\Response;
+use Closure;
 
 class Auth
 {
-    public function handle(Request $request, \Closure $next): Response
+    public function run(Closure $next): void
     {
-        $userId = session('user_id');
-        if (empty($userId)) {
-            if ($request->isAjax()) {
-                return json(['code' => 401, 'msg' => '请先登录']);
+        if (!session('?user')) {
+            if (IS_AJAX) {
+                halt('', 401);
             }
-            return redirect('/index/user/login');
+            header('Location:' . url('user/login'));
+            exit();
         }
-        
-        $user = \app\common\model\User::find($userId);
-        if (!$user || $user->status != 0) {
-            session('user_id', null);
-            return redirect('/index/user/login');
-        }
-        
-        $request->user = $user;
-        return $next($request);
+        $next();
     }
 }
 ```
@@ -497,7 +467,7 @@ return [
     // 框架中间件
     'framework' => [
         'controller_start' => [], // 控制器开始
-        'database_query' => [], // 查询sql
+        'database_query' => [],   // 查询sql
         'database_execute' => [], // 执行sql
     ],
 ];
@@ -522,7 +492,7 @@ class Cp
 
 #### 创建命令
 
-命令类放置在 app/{应用名}/command/ 目录下，目录结构与控制器类似。命令类需要继承框架的 Command 基类，并实现 fire() 方法作为命令执行的入口。可以在类中定义 configure() 方法来配置命令的名称、描述、参数等信息。
+命令类放置在 app/{应用名}/command/ 目录下，目录结构与控制器类似。命令类需要继承框架的 Command 基类，并实现 cli() 抽象方法作为命令执行的入口。
 
 ```php
 <?php
@@ -534,37 +504,33 @@ use xphp\cli\Command;
 
 class Test extends Command
 {
-    protected $signature = 'test {name=World} {--y|yes : Skip confirmation}';
-    
-    protected $description = 'Test command description';
-
-    public function fire(): int
+    public function cli(): bool
     {
-        $name = $this->argument('name');
-        $this->info("Hello, {$name}!");
-        
-        if ($this->option('yes')) {
-            $this->info('Running without confirmation...');
-        }
-        
-        return 0;
+        $this->success('Test command executed!');
+        return true;
     }
 }
 ```
 
 #### 执行命令
 
-使用 php xphpcli 命令名称 来执行命令。命令名称可以是完整的命名空间路径，也可以使用简化的别名。命令支持参数和选项的传递，参数在命令名称后按顺序传递，选项使用 -- 前缀标识。
+使用 php xphpcli 命令名称 来执行命令。命令名称格式为 `make:方法名`，如 `make:model`、`make:ctrl` 等。命令支持参数和选项的传递，参数在命令名称后按顺序传递，`-f` 选项表示强制覆盖已存在的文件。
 
 ```bash
-# 执行简单命令
+# 查看所有可用命令
+php xphpcli
+
+# 生成模型
+php xphpcli make:model admin@user
+
+# 生成控制器
+php xphpcli make:ctrl admin@user _def -f
+
+# 生成视图
+php xphpcli make:view admin@user index
+
+# 清除缓存
 php xphpcli clear
-
-# 执行带参数的命令
-php xphpcli admin@test name John
-
-# 执行带选项的命令
-php xphpcli test John --yes
 ```
 
 ---

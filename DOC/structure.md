@@ -34,7 +34,7 @@
 
 app目录是应用程序代码的核心区域，采用多应用架构设计。每个应用是独立的模块，拥有自己的控制器、模型、视图和配置。这种设计使得前台和后台代码完全隔离，便于独立开发和部署。应用之间可以通过命名空间调用实现代码共享，公共模型可以放在app/common/model目录下供各应用引用。
 
-当前项目包含三个预置应用：admin（后台管理应用）、index（前台应用）、install（安装应用）。每个应用都遵循统一的目录结构组织代码，包括controller（控制器）、model（模型）、view（视图）、config（应用配置）等子目录。
+当前项目包含三个预置应用：admin（后台管理应用）、index（前台应用）、install（安装应用）。每个应用都遵循统一的目录结构组织代码，包括controller（控制器）、model（模型）、view（视图）、config（应用配置）等子目录。此外，app/common.php是跨应用的公共函数文件，app/common/model/目录存放跨应用共享的模型文件。
 
 ### 后台管理应用（app/admin）
 
@@ -86,13 +86,19 @@ make/子目录包含代码生成相关的视图，index.html是代码生成界�
 
 **User.php**是前台用户控制器，使用Jump Trait提供页面跳转功能。控制器中的middleware属性配置了auth中间件，保护需要登录才能访问的页面。captcha方法生成验证码图片；login方法处理用户登录，调用模型的login方法验证用户名密码；logout方法处理用户退出，清除会话数据；register方法处理用户注册，调用模型的save方法创建新用户；info方法查看指定用户的公开信息；index方法是个人中心首页，展示当前登录用户的资料信息；profile方法处理资料修改，调用模型的save方法更新用户信息；password方法处理密码修改，调用模型的changePwd方法更新密码。
 
-前台应用的视图位于app/index/view/目录下，login.html是登录页面，register.html是注册页面，profile.html是资料编辑页面。这些视图使用前台模板引擎渲染，与后台视图使用相同的模板语法。
+**Index.php**是前台首页控制器，返回网站首页视图。
+
+**Api.php**是前台API控制器，提供验证码获取等接口功能。
+
+**Error.php**是前台错误处理控制器，用于捕获和处理404等错误。
+
+前台应用的视图位于template/default/目录下，采用主题模板机制。user/子目录包含用户相关模板：login.html是登录页面，register.html是注册页面，profile.html是资料编辑页面，password.html是修改密码页面，info.html是用户信息页面，index.html是个人中心页面。index/子目录包含首页模板：index.html是网站首页。public/子目录包含公共模板：header.html是头部，footer.html是底部，jump.html是跳转页面，_404.html是404错误页面。about/子目录包含关于页面：index.html是关于页面。
 
 ### 安装应用（app/install）
 
 安装应用负责系统的初始化和数据准备。当系统检测到未安装状态时，会自动跳转到安装页面，引导用户完成数据库配置和管理员账号创建等步骤。应用代码位于app/install目录下。
 
-**Index.php**是安装控制器，处理安装向导的各个步骤。安装向导通常包括环境检测（检查PHP版本和必要扩展）、数据库配置（填写数据库连接信息）、创建数据表、创建管理员账号等步骤。安装过程会自动执行数据库迁移脚本，创建所需的数据表并插入初始数据。安装完成后，系统会自动锁定安装功能，防止重复安装导致数据问题。
+**Index.php**是安装控制器，处理安装向导的各个步骤。安装向导包括选择备份目录、执行SQL文件（创建数据表和插入初始数据）、生成install.lock锁定文件等步骤。安装完成后，系统会自动锁定安装功能，防止重复安装导致数据问题。
 
 安装视图位于app/install/view/目录下，index.html是安装向导页面。
 
@@ -118,7 +124,7 @@ core/目录包含框架的核心类文件，这些类构成了框架的基础架
 
 **App.php**是应用类，负责协调各组件完成请求处理的整个流程。应用类的职责包括初始化应用环境（包括定义路径常量、加载配置文件、注册自动加载等）、启动中间件、执行路由解析、调用控制器方法、处理响应输出等。App类的init方法创建应用实例并初始化配置，boot方法启动应用并处理请求。框架通过App类实现了控制反转（IoC），各组件通过依赖注入的方式获取所需依赖。
 
-**Model.php**是模型基类，封装了数据库操作的基本方法，为应用模型提供增删改查等基础能力。模型基类使用PDO与数据库交互，提供了链式查询构建器，支持where、field、order、limit、page等查询方法。模型基类还封装了数据验证、自动完成、数据过滤等数据处理逻辑。_before_insert、_after_insert、_before_update、_after_update、_before_delete、_after_delete等钩子方法允许开发者在数据操作的生命周期中插入自定义逻辑。
+**Model.php**是模型基类，封装了数据库操作的基本方法，为应用模型提供增删改查等基础能力。模型基类使用PDO与数据库交互，提供了链式查询构建器，支持where、field、order、limit、paginate等查询方法。模型基类还封装了数据验证、自动完成、数据过滤等数据处理逻辑。_before_insert、_after_insert、_before_update、_after_update、_before_delete、_after_delete等钩子方法允许开发者在数据操作的生命周期中插入自定义逻辑。
 
 **Controller.php**是控制器基类，提供了视图渲染、页面跳转、JSON响应等基础方法。控制器基类使用Jump Trait提供success、error、redirect等便捷的响应方法。控制器是MVC架构中的调度中心，负责接收请求、协调模型、选择视图。
 
@@ -138,11 +144,11 @@ core/目录包含框架的核心类文件，这些类构成了框架的基础架
 
 cli/目录包含命令行工具的实现代码，用于执行定时任务、数据处理、代码生成等操作。
 
-**Command.php**是命令行命令的基类，定义了命令的基本结构和生命周期方法。命令类包含signature属性定义命令的签名（包括命令名、参数、选项），description属性定义命令的描述信息。fire方法是命令执行的入口点，子类需要实现此方法定义具体的命令逻辑。
+**Command.php**是命令行命令的基类，定义了命令的基本结构。命令类包含cli()抽象方法，子类必须实现此方法定义具体的命令逻辑。
 
 **Make.php**是代码生成器的主类，实现了make:model、make:ctrl、make:view、make:table等命令。代码生成器根据数据表结构或模板文件自动生成PHP代码，包括模型类、控制器类、视图模板等。生成器使用模板文件定义生成代码的格式，通过变量替换生成最终的代码文件。
 
-框架的命令行工具通过xphpcli入口文件启动，解析用户输入的命令名称和参数，调用对应命令类的fire方法执行具体操作。开发者在终端执行php xphpcli可以查看所有可用的命令列表，执行php xphpcli help 命令名可以查看特定命令的详细用法。
+框架的命令行工具通过xphpcli入口文件启动，解析用户输入的命令名称和参数，调用对应命令类的cli()方法执行具体操作。开发者在终端执行php xphpcli可以查看所有可用的命令列表。
 
 ### 模板文件（xphp/tpl）
 
@@ -292,13 +298,18 @@ DOC/目录存放项目的技术文档，为开发者提供详细的参考资料�
 │   │       ├── login/              # 登录视图
 │   │       ├── backup/             # 数据备份视图
 │   │       └── make/              # 代码生成视图
+│   │   └── widget/                 # 小部件目录
+│   │       └── Menu.php           # 菜单小部件
 │   ├── index/                      # 前台应用
-│   │   ├── controller/             # 前台控制器
-│   │   │   └── User.php          # 用户控制器
-│   │   └── view/                  # 前台视图
+│   │   └── controller/             # 前台控制器
+│   │       ├── User.php          # 用户控制器
+│   │       ├── Index.php         # 首页控制器
+│   │       ├── Api.php           # API接口控制器
+│   │       └── Error.php         # 错误处理控制器
 │   ├── install/                    # 安装应用
 │   │   ├── controller/            # 安装控制器
 │   │   └── view/                  # 安装视图
+│   ├── common.php                  # 公共函数文件
 │   └── common/
 │       └── model/                 # 公共模型
 │           └── User.php          # 用户模型
@@ -317,6 +328,10 @@ DOC/目录存放项目的技术文档，为开发者提供详细的参考资料�
 │   ├── template.php              # 模板配置
 │   ├── upload.php                # 上传配置
 │   └── ...                        # 其他配置文件
+├── route/                         # 路由定义目录
+│   ├── admin.php                 # 后台路由
+│   ├── index.php                 # 前台路由
+│   └── install.php               # 安装路由
 ├── DOC/                           # 项目文档目录
 │   ├── README.md                 # 文档索引
 │   ├── architecture.md            # 架构文档
@@ -325,6 +340,7 @@ DOC/目录存放项目的技术文档，为开发者提供详细的参考资料�
 │   ├── development.md             # 开发文档
 │   ├── dependencies.md           # 依赖文档
 │   ├── quickstart.md             # 快速入门
+│   ├── seo-landing-page-design.md # SEO落地页设计（未实现）
 │   └── MIGRATION_*.md            # 迁移脚本
 ├── extend/                        # 扩展类库目录
 │   ├── captcha/                 # 验证码扩展
@@ -350,8 +366,10 @@ DOC/目录存放项目的技术文档，为开发者提供详细的参考资料�
 │   └── install.php             # 安装入口
 ├── template/                     # 前台模板目录
 │   └── default/                # 默认主题
-│       ├── public/            # 公共模板
-│       └── user/              # 用户模板
+│       ├── index/              # 首页模板
+│       ├── user/               # 用户模板
+│       ├── public/             # 公共模板
+│       └── about/              # 关于页面模板
 ├── xphp/                        # 框架核心目录
 │   ├── bootstrap.php           # 引导文件
 │   ├── core/                   # 核心类库

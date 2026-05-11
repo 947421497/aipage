@@ -54,7 +54,7 @@ public function index()
 
 ### 基本输出
 
-模板中最基本的语法是变量输出，使用左右定界符包裹变量名称即可输出变量的值。变量可以是字符串、数字、数组等类型。如果是数组变量，使用点语法访问数组元素或对象属性。变量输出时自动对 HTML 特殊字符进行转义，防止 XSS 攻击。如果确认变量值是安全的 HTML 内容，可以使用 raw 过滤器禁止转义。
+模板中最基本的语法是变量输出，使用左右定界符包裹变量名称即可输出变量的值。变量可以是字符串、数字、数组等类型。如果是数组变量，使用点语法访问数组元素或对象属性。如果需要对变量进行函数处理，可以使用管道符 `|` 调用函数，如 `{$content|raw}` 会调用 PHP 的 `raw()` 函数处理变量值。
 
 ```html
 <!-- 输出字符串变量 -->
@@ -67,39 +67,39 @@ public function index()
 <!-- 输出嵌套数组 -->
 <p>{$data.profile.name}</p>
 
-<!-- 不转义输出 -->
+<!-- 使用函数处理变量 -->
 <div>{$content|raw}</div>
 
-<!-- 输出系统常量 -->
-<p>{__ROOT__}</p>
-<p>{__URL__}</p>
+<!-- 输出系统常量（双下划线包裹，无需花括号） -->
+<p>__ROOT__</p>
+<p>__STATIC__</p>
+<p>__HOST__</p>
 ```
 
 ### 默认值输出
 
-当变量不存在或值为空时，可以指定默认值进行输出。使用 defined 语法在变量后添加默认值，分隔符为竖线。这种方式可以避免页面显示空白或 undefined 字符串，提升用户体验。
+当变量不存在或值为空时，可以指定默认值进行输出。使用 `|default=默认值` 语法或 `??` 空合并运算符。这种方式可以避免页面显示空白或 undefined 字符串，提升用户体验。
 
 ```html
-<!-- 变量不存在时输出默认值 -->
+<!-- 使用 default 过滤器 -->
 <p>{$username|default='匿名用户'}</p>
 
-<!-- 支持表达式作为默认值 -->
-<p>{$count|default=0}</p>
+<!-- 使用 ?? 空合并运算符 -->
+<p>{$count ?? 0}</p>
+<p>{$user.nickname ?? '未设置'}</p>
 ```
 
 ### 运算符输出
 
-模板支持基本的算术运算符，可以在变量输出时进行简单计算。支持的运算符包括加法、减法、乘法、除法、取模等。运算符优先级与 PHP 语法一致，可以使用括号改变优先级。
+模板支持三元运算符，可以在变量输出时进行简单条件判断。三元运算符使用 `{条件 ? 值1 : 值2}` 语法直接输出结果。
 
 ```html
-<!-- 加法运算 -->
-<p>{$a + $b}</p>
+<!-- 三元运算输出 -->
+<p>{$status == 1 ? '正常' : '停用'}</p>
 
-<!-- 乘法运算 -->
-<p>{$price * $quantity}</p>
-
-<!-- 三元运算 -->
-<p>{$status ? '正常' : '禁用'}</p>
+<!-- 使用 ?? 空合并运算符 -->
+<p>{$username ?? '匿名用户'}</p>
+<p>{$user.nickname ?? '未设置'}</p>
 ```
 
 ---
@@ -112,40 +112,40 @@ public function index()
 
 ```html
 <!-- 简单条件判断 -->
-{if $user.status == 0}
+{if $user.status == 0:}
+<p>停用用户</p>
+{elseif $user.status == 1:}
 <p>正常用户</p>
-{elseif $user.status == 1}
-<p>禁用用户</p>
-{else}
+{else:}
 <p>未知状态</p>
 {/if}
 
 <!-- 多条件组合 -->
-{if $user.level > 0 && $user.status == 0}
+{if $user.level > 0 && $user.status == 1:}
 <p>VIP用户</p>
 {/if}
 
 <!-- 字符串比较 -->
-{if $user.gender == '男'}
+{if $user.gender == '男':}
 <p>男性用户</p>
-{elseif $user.gender == '女'}
+{elseif $user.gender == '女':}
 <p>女性用户</p>
 {/if}
 ```
 
 ### 比较运算符
 
-条件表达式中可以使用以下比较运算符进行数据比较。等于运算符判断两个值是否相等，可以使用 eq 作为简写形式。不等于运算符判断两个值是否不相等，可以使用 neq 或 <> 作为简写。大于运算符判断左值是否大于右值，可以使用 gt 作为简写。小于运算符判断左值是否小于右值，可以使用 lt 作为简写。大于等于运算符判断左值是否大于等于右值，可以使用 egt 作为简写。小于等于运算符判断左值是否小于等于右值，可以使用 elt 作为简写。
+条件表达式中可以使用以下标准 PHP 比较运算符进行数据比较：等于（==）、不等于（!= 或 <>）、大于（>）、小于（<）、大于等于（>=）、小于等于（<=）。框架模板引擎使用标准 PHP 比较语法，无需学习额外的简写运算符。
 
 ```html
-<!-- 使用完整运算符 -->
-{if $score >= 60}
+<!-- 使用比较运算符 -->
+{if $score >= 60:}
 <p>及格</p>
 {/if}
 
-<!-- 使用简写运算符 -->
-{if $level egt 3}
-<p>高级用户</p>
+<!-- 使用不等于运算符 -->
+{if $user.status != 0:}
+<p>用户已停用</p>
 {/if}
 ```
 
@@ -158,7 +158,7 @@ public function index()
 foreach 标签用于遍历数组或集合，是模板中使用频率最高的循环结构。每次循环时，当前元素的值赋值给 as 后面的变量名，键名赋值给可选的 key 变量。循环体内容在 foreach 和 /foreach 标签之间定义，可以重复输出多条记录。
 
 ```html
-<!-- 基本遍历 -->
+<!-- 遍历列表 -->
 {foreach $list as $vo}
 <p>{$vo.username}</p>
 {/foreach}
@@ -174,7 +174,7 @@ foreach 标签用于遍历数组或集合，是模板中使用频率最高的循
 {/foreach}
 
 <!-- 判断数组是否为空 -->
-{empty $list}
+{empty $list:}
 <p>暂无数据</p>
 {else:}
 <p>有数据</p>
@@ -197,6 +197,8 @@ foreach 标签用于遍历数组或集合，是模板中使用频率最高的循
 {$list->links()|raw}
 ```
 
+> 注意：`|raw` 会调用 PHP 的 `raw()` 函数处理输出。如果项目中未定义 `raw()` 函数，分页链接可能需要使用 `{:echo($list->links())}` 语法输出。
+
 ---
 
 ## 模板包含
@@ -212,9 +214,8 @@ include 标签用于将其他模板文件包含到当前模板中，实现代码
 <!-- 包含其他控制器的模板 -->
 {include file='user/sidebar.html'}
 
-<!-- 带参数的包含（框架支持变量替换） -->
-<!-- 在被包含模板中使用 [item] 占位符 -->
-<div>{include file='public/item.html' [item]=$data /}</div>
+<!-- 带参数的包含（使用 [占位符] 语法） -->
+<div>{include file='public/item.html' item=$data}</div>
 ```
 
 ### 传递变量
@@ -222,14 +223,14 @@ include 标签用于将其他模板文件包含到当前模板中，实现代码
 include 标签支持向被包含模板传递变量参数。使用花括号语法在标签内声明变量，被包含模板可以直接使用这些变量。这种方式使得公共模板可以接受不同参数，呈现不同内容。
 
 ```html
-<!-- 传递单个变量 -->
-{include file="public/item" {item}=$data /}
+<!-- 传递变量（被包含模板中使用 [item] 占位符接收） -->
+{include file='public/item.html' item=$data}
 
 <!-- 传递多个变量 -->
-{include file="public/card" [title]=$title [content]=$content /}
+{include file='public/card.html' title=$title content=$content}
 
 <!-- 在被包含模板中使用变量 -->
-<!-- public/item.html -->
+<!-- public/item.html 中使用 [item] 占位符，渲染时替换为传入的值 -->
 <div class="item">
     <h3>{$item.title}</h3>
     <p>{$item.content}</p>
@@ -271,7 +272,7 @@ include 标签支持向被包含模板传递变量参数。使用花括号语法
 
 ```html
 <!-- 使用布局 -->
-{layout name="layout" /}
+{layout name="layout.html"}
 
 <!-- 页面内容会自动替换 {__CONTENT__} 位置 -->
 <div class="page-content">
@@ -302,30 +303,31 @@ include 标签支持向被包含模板传递变量参数。使用花括号语法
 <p>{$content|substr=0,100}</p>
 ```
 
-### 过滤器链式调用
+### 过滤器使用说明
 
-多个过滤器可以链式调用，按从左到右的顺序依次处理变量值。每个过滤器使用竖线分隔，参数使用冒号分隔。这种方式可以组合出丰富的数据处理逻辑，避免在控制器中进行复杂的数据格式化。
+模板引擎通过 `|函数名` 语法调用 PHP 函数处理变量值。每个变量只能调用一个过滤器函数。如果需要多步处理，建议在控制器中完成数据预处理后再传递给模板。
 
 ```html
-<!-- 链式调用多个过滤器 -->
-<p>{$content|trim|htmlspecialchars}</p>
+<!-- 单个过滤器 -->
+<p>{$content|trim}</p>
 
 <!-- 带参数的过滤器 -->
-<p>{$title|trim|substr=0,50|htmlspecialchars}</p>
+<p>{$create_time|date='Y-m-d'}</p>
+<p>{$price|number_format=2}</p>
 
-<!-- 条件组合 -->
-<p>{$user.nickname|default='匿名用户'|htmlspecialchars}</p>
+<!-- 使用 ?? 空合并运算符提供默认值 -->
+<p>{$user.nickname ?? '匿名用户'}</p>
 ```
 
 ### 自定义过滤器
 
-开发者可以根据业务需求扩展自定义过滤器。过滤器函数放置在模块的 common.php 文件中，函数名称必须以 filter_ 作为前缀。定义后即可在模板中像使用内置过滤器一样使用自定义过滤器。
+开发者可以根据业务需求扩展自定义过滤器。过滤器函数放置在模块的 common.php 文件中，在模板中通过 `|函数名` 语法直接调用。定义后即可在模板中像使用内置过滤器一样使用自定义过滤器。
 
 ```php
 // app/admin/common.php
-function filter_status($value)
+function status($value)
 {
-    $status = [0 => '正常', 1 => '禁用'];
+    $status = [0 => '停用', 1 => '正常'];
     return $status[$value] ?? '未知';
 }
 ```
@@ -341,11 +343,11 @@ function filter_status($value)
 
 ### php 标签
 
-php 标签允许在模板中直接编写 PHP 代码。框架的模板引擎会解析并执行这些 PHP 代码。这种方式可以处理更复杂的逻辑，但也应谨慎使用以免破坏模板的结构清晰性。
+php 标签允许在模板中执行简单的变量赋值操作。框架的模板引擎会解析这些 PHP 代码。这种方式可以处理简单的逻辑，但也应谨慎使用以免破坏模板的结构清晰性。
 
 ```html
-<!-- 执行 PHP 代码 -->
-{php $menu=widget('menu')->get()}
+<!-- 变量赋值 -->
+{php $menu = widget('menu')->get()}
 
 <!-- 使用三元运算符 -->
 <span class="{if $vo['status']==1:}text-success{else:}text-secondary{/if}">

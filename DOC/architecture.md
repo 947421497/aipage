@@ -139,11 +139,14 @@
 │   │       ├── profile/           # 个人资料视图
 │   │       ├── public/            # 公共模板
 │   │       └── user/              # 用户视图
+│   │   └── widget/                # 小部件
+│   │       └── Menu.php           # 菜单小部件
 │   ├── index/                     # 前台应用
-│   │   ├── command/
-│   │   ├── config/
-│   │   ├── controller/
-│   │   └── view/
+│   │   └── controller/            # 控制器
+│   │       ├── Api.php            # API控制器
+│   │       ├── Error.php          # 错误控制器
+│   │       ├── Index.php          # 首页控制器
+│   │       └── User.php           # 用户控制器
 │   ├── install/                    # 安装应用
 │   │   ├── controller/
 │   │   └── view/
@@ -194,6 +197,10 @@
 │   └── install.php                 # 安装路由
 ├── template/                       # 前台模板目录
 │   └── default/                    # 默认主题
+│       ├── about/                  # 关于页面模板
+│       ├── index/                  # 首页模板
+│       ├── public/                 # 公共模板
+│       └── user/                   # 用户模板
 ├── xphp/                           # 框架核心
 │   ├── bootstrap.php               # 引导文件
 │   ├── cli/                        # 命令行工具

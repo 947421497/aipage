@@ -58,7 +58,7 @@ CREATE TABLE `xphp_user` (
   `avatar` varchar(200) NOT NULL DEFAULT '' COMMENT '头像',
   `level` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '等级',
   `create_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0正常/1禁用)',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0停用/1正常)',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 ```
@@ -78,7 +78,7 @@ CREATE TABLE `xphp_menu` (
   `is_sys` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '系统菜单(0可删/1禁删)',
   `sort` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '排序',
   `update_time` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0正常/1禁用)',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0停用/1启用)',
   PRIMARY KEY (`id`),
   KEY `idx_parent_id` (`parent_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COMMENT='菜单表';
@@ -95,7 +95,7 @@ CREATE TABLE `xphp_config` (
   `config_key` varchar(20) NOT NULL DEFAULT '' COMMENT '配置键名',
   `config_value` varchar(255) NOT NULL DEFAULT '' COMMENT '配置键值',
   `config_type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '配置类型',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0正常/1禁用)',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '状态(0停用/1启用)',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COMMENT='配置表';
 ```
@@ -119,7 +119,7 @@ CREATE TABLE `xphp_config` (
 | avatar | varchar(200) | '' | 头像URL地址，存储头像图片路径 |
 | level | tinyint(1) | 0 | 用户等级，用于会员等级体系 |
 | create_time | int(10) | 0 | 注册时间，Unix时间戳格式 |
-| status | tinyint(1) | 0 | 账号状态：0=正常，1=禁用 |
+| status | tinyint(1) | 0 | 账号状态：0=停用，1=正常 |
 
 ### 菜单表字段详解
 
@@ -145,7 +145,7 @@ CREATE TABLE `xphp_config` (
 | config_key | varchar(20) | '' | 配置项的键名，程序中通过此键名获取值 |
 | config_value | varchar(255) | '' | 配置项的键值，存储实际的配置内容 |
 | config_type | tinyint(1) | 0 | 配置类型：0=文本，1=开关等 |
-| status | tinyint(1) | 0 | 配置状态：0=启用，1=禁用 |
+| status | tinyint(1) | 0 | 配置状态：0=停用，1=启用 |
 
 ---
 
@@ -196,10 +196,10 @@ ALTER TABLE `xphp_config` ADD UNIQUE INDEX `idx_config_key` (`config_key`);
 
 ```sql
 INSERT INTO `xphp_user` VALUES 
-(1, 'admin', '0192023a7bbd73250516f069df18b500', '管理员', 'admin@example.com', '', '', '这个人很懒，什么都没写', '', 3, UNIX_TIMESTAMP(), 0);
+(1, 'admin', '86f3059b228c8acf99e69734b6bb32cc', '无念', 'aphp.top@qq.com', '', '24203741', 'PHP是最好的语言', '', 3, UNIX_TIMESTAMP(), 1);
 ```
 
-> **重要提示**：密码 `0192023a7bbd73250516f069df18b500` 是 `admin123` 的MD5加密值。在生产环境中，请务必在首次登录后立即修改默认密码，并使用强密码策略。
+> **重要提示**：密码 `86f3059b228c8acf99e69734b6bb32cc` 是双重MD5加密值（`md5(md5(密码) . 用户名)`）。在生产环境中，请务必在首次登录后立即修改默认密码，并使用强密码策略。
 
 ### 初始化菜单数据
 
@@ -220,7 +220,7 @@ INSERT INTO `xphp_menu` VALUES
 ```sql
 INSERT INTO `xphp_config` VALUES 
 (1, '网站标题', 'site_title', '一鱼快速构架 · XStart', 0, 1),
-(2, '关键词', 'site_kw', '一鱼PHP框架,无念的编程圈,xphp,PHP框架,MVC框架', 0, 1),
+(2, '关键词', 'site_kw', '一鱼PHP框架,无念的编程圈,xphp,PHP框架,MVC框架,php文档管理,php低代码,php留言本', 0, 1),
 (3, '网站描述', 'site_desc', '一个超轻量级MVC开发PHP框架', 0, 1),
 (4, '网站版权', 'site_copy', 'XStart_v1.0', 0, 1),
 (5, '版权链接', 'site_link', 'http://xstart.xphp.net', 0, 1),
@@ -239,8 +239,8 @@ INSERT INTO `xphp_config` VALUES
 
 | 值 | 说明 | 使用场景 |
 |----|------|----------|
-| 0 | 正常 | 用户可正常登录和使用所有功能 |
-| 1 | 禁用 | 账号被禁用，无法登录 |
+| 0 | 停用 | 账号被停用，无法登录 |
+| 1 | 正常 | 用户可正常登录和使用所有功能 |
 
 #### 菜单系统标识（is_sys）
 
@@ -253,8 +253,8 @@ INSERT INTO `xphp_config` VALUES
 
 | 值 | 说明 |
 |----|------|
-| 0 | 正常 |
-| 1 | 禁用 |
+| 0 | 停用 |
+| 1 | 启用 |
 
 ---
 

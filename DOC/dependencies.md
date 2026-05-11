@@ -37,7 +37,14 @@
   ],
   "minimum-stability": "stable",
   "require": {
-    "php": ">=8.1.0"
+    "php": ">=8.1.0",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-mbstring": "*",
+    "ext-gd": "*",
+    "ext-openssl": "*",
+    "ext-curl": "*",
+    "ext-ctype": "*"
   },
   "autoload": {
     "psr-4": {
@@ -56,20 +63,12 @@
 
 ### 可选依赖
 
-以下 Composer 包是可选的，可以根据项目需求选择性安装。Redis 扩展包用于 Redis 缓存支持，需要 PHP 安装 redis 扩展。Swoole 扩展包用于 Swoole 协程支持，可以提升框架在高并发场景下的性能。这些扩展不是框架运行的必须依赖，不安装也能正常运行。
+以下扩展是可选的，可以根据项目需求选择性安装。Redis 扩展用于 Redis 缓存和会话支持，需要 PHP 安装 redis 扩展。Swoole 扩展用于 Swoole 协程支持，可以提升框架在高并发场景下的性能。这些扩展不是框架运行的必须依赖，不安装也能正常运行。
+
+> 注意：实际 composer.json 中未定义 `suggest` 字段，以下为建议配置。如需使用 Redis 缓存或 Swoole，请手动安装对应 PHP 扩展。
 
 ```json
 {
-  "require": {
-    "php": ">=8.1.0",
-    "ext-json": "*",
-    "ext-pdo": "*",
-    "ext-mbstring": "*",
-    "ext-gd": "*",
-    "ext-openssl": "*",
-    "ext-curl": "*",
-    "ext-ctype": "*"
-  },
   "suggest": {
     "ext-redis": "Redis support for caching and session",
     "ext-swoole": "Swoole support for high performance"
