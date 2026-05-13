@@ -37,8 +37,8 @@ class Config
         $last_time = file_last_time($this->fileList);
         $cache_file = $this->cachePath . '/' . md5(json_encode($this->fileList) . $last_time) . '.php';
         if (file_exists($cache_file)) {
-            $data = file_get_contents($cache_file);
-            self::$items = json_validate($data) ? json_decode($data, true) : [];
+            $data = include $cache_file;
+            self::$items = is_array($data) ? $data : [];
         } else {
             dir_delete($this->cachePath);
             foreach ($this->fileList as $file) {
@@ -60,7 +60,8 @@ class Config
                     }
                 }
             }
-            file_put_contents($cache_file, json_encode(self::$items));
+            $cacheContent = "<?php\nreturn " . var_export(self::$items, true) . ';';
+            file_put_contents($cache_file, $cacheContent);
         }
     }
 

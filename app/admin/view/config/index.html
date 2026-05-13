@@ -25,79 +25,66 @@
                 <div class="mb-3">
                   <small class="form-text">文件位置：<code>app/index/config/site.php</code> 调用方式：<code>site('键名')</code></small>
                 </div>
-                <div class="mb-3">
-                  <button type="button" class="btn btn-info me-1" onclick="ajaxConfirm('{:url('save_file')}','生成配置文件');">生成配置</button>
-                  <small class="form-text">注意：修改后须生成配置</small>
+
+                <div class="card-btns mb-2-5">
+                  <a href="{:url('add')}" class="btn btn-primary me-1"><i class="mdi mdi-plus"></i> 新增</a>
+                  <button type="button" class="btn btn-info me-1" onclick="ajaxConfirm('{:url('save_file')}','生成配置文件');"><i class="mdi mdi-file-refresh"></i> 生成配置</button>
+                  <button type="button" class="btn btn-danger" onclick="actionConfirm('删除','{:url('del')}');"><i class="mdi mdi-window-close"></i> 删除</button>
+                  <small class="form-text ms-2">修改已自动同步，生成配置按钮用于手动重新生成</small>
                 </div>
 
-                <ul class="nav nav-tabs">
-                  <li class="nav-item">
-                    <button class="nav-link active" id="tab-list" data-bs-toggle="tab" data-bs-target="#config-list" type="button">配置列表</button>
-                  </li>
-                  <li class="nav-item">
-                    <button class="nav-link" id="tab-add" data-bs-toggle="tab" data-bs-target="#config-add" type="button">新增配置</button>
-                  </li>
-                </ul>
-
-                <div class="tab-content">
-                  <div class="tab-pane fade show active" id="config-list" aria-labelledby="tab-list">
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="check-all" onclick="selectAll(this.checked)">
+                            <label class="form-check-label" for="check-all"></label>
+                          </div>
+                        </th>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>键名</th>
+                        <th>键值</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                     {foreach $list as $vo}
-                    <form id="myform{$vo.id}" method="post" class="edit-form submit-ajax" action="{:url('index')}">
-                      <input type="hidden" name="id" value="{$vo.id}"/>
-                      <div class="row mb-3 border-bottom pb-3">
-                        <div class="col-md-2">
-                          <label class="form-label" for="name_{$vo.id}">名称</label>
-                          <input type="text" name="name" id="name_{$vo.id}" value="{$vo.name}" class="form-control" placeholder="输入名称"/>
-                        </div>
-                        <div class="col-md-2">
-                          <label class="form-label" for="key_{$vo.id}">键名</label>
-                          <input type="text" name="config_key" id="key_{$vo.id}" value="{$vo.config_key}" class="form-control" placeholder="输入键名"/>
-                        </div>
-                        <div class="col-md-5">
-                          <label class="form-label" for="value_{$vo.id}">键值</label>
-                          <input type="text" name="config_value" id="value_{$vo.id}" value="{$vo.config_value}" class="form-control" placeholder="请输入值"/>
-                        </div>
-                        <div class="col-md-3">
-                          <label class="form-label">&nbsp;</label>
-                          <div>
-                            <button type="submit" class="btn btn-primary me-1">修改</button>
-                            <a href="javascript:ajaxConfirm('{:url('del',['id'=>$vo['id']])}','删除',2);" class="btn btn-danger">删除</a>
+                      <tr>
+                        <td>
+                          <div class="form-check">
+                            <input type="checkbox" class="form-check-input ids" name="ids[]" value="{$vo.id}" id="ids-{$vo.id}">
+                            <label class="form-check-label" for="ids-{$vo.id}"></label>
                           </div>
-                        </div>
-                      </div>
-                    </form>
+                        </td>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.name}</td>
+                        <td><code>{$vo.config_key}</code></td>
+                        <td>{$vo.config_value}</td>
+                        <td>
+                          {if $vo['status']==1:}
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',2);" class="text-success" data-bs-toggle="tooltip" title="点击停用">已启用</a>
+                          {else:}
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',2);" class="text-secondary" data-bs-toggle="tooltip" title="点击启用">已停用</a>
+                          {/if}
+                        </td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <a class="btn btn-primary" href="{:url('edit',['id'=>$vo['id']])}">编辑</a>
+                            <a class="btn btn-danger" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);">删除</a>
+                          </div>
+                        </td>
+                      </tr>
                     {/foreach}
-                    {empty $list:}
-                    <p class="text-center text-muted py-3">暂无配置项</p>
-                    {/empty}
-                  </div>
-
-                  <div class="tab-pane fade" id="config-add" aria-labelledby="tab-add">
-                    <form id="myformadd" method="post" class="edit-form submit-ajax" action="{:url('index')}">
-                      <div class="row mb-3">
-                        <div class="col-md-2">
-                          <label class="form-label" for="add_name">名称</label>
-                          <input type="text" name="name" id="add_name" value="" class="form-control" placeholder="输入名称"/>
-                        </div>
-                        <div class="col-md-2">
-                          <label class="form-label" for="add_key">键名</label>
-                          <input type="text" name="config_key" id="add_key" value="" class="form-control" placeholder="输入键名"/>
-                        </div>
-                        <div class="col-md-5">
-                          <label class="form-label" for="add_value">键值</label>
-                          <input type="text" name="config_value" id="add_value" value="" class="form-control" placeholder="请输入值"/>
-                        </div>
-                        <div class="col-md-3">
-                          <label class="form-label">&nbsp;</label>
-                          <div>
-                            <button type="submit" class="btn btn-success me-1">添加</button>
-                            <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
+                    </tbody>
+                  </table>
                 </div>
+                {empty $list:}
+                <p class="text-center text-muted py-3">暂无配置项</p>
+                {/empty}
 
               </div>
             </div>

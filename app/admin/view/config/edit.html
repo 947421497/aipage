@@ -1,0 +1,52 @@
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">
+  <div class="ctn-preloader">
+    <div class="round_spinner">
+      <div class="spinner"></div>
+      <img src="__STATIC__/images/loading-logo.png" alt="">
+    </div>
+  </div>
+</div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
+
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <header class="card-header"><div class="card-title">修改配置</div></header>
+              <div class="card-body">
+                <form class="site-form submit-ajax" action="{:url('edit')}" method="post">
+                  <input type="hidden" name="id" value="{$vo.id}" />
+                  <div class="mb-3">
+                    <label class="form-label" for="name">*名称</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="配置项名称" value="{$vo.name}" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="config_key">*键名</label>
+                    <input type="text" class="form-control" id="config_key" name="config_key" placeholder="英文键名" value="{$vo.config_key}" readonly="readonly" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="config_value">*键值</label>
+                    <input type="text" class="form-control" id="config_value" name="config_value" placeholder="配置值" value="{$vo.config_value}" />
+                  </div>
+                  <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">确定</button>
+                    <button type="button" class="btn btn-default" onclick="javascript:history.back(-1);return false;">返回</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    {include file='public/footer.html'}
+</body>
+</html>

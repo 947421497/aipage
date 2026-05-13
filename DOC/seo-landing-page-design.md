@@ -81,7 +81,7 @@ DROP TABLE IF EXISTS `xphp_task_log`;
 在现有内容末尾追加 6 张新表的 CREATE 语句：
 
 **约束**：
-- UNIQUE 字段 `DEFAULT NULL`（MySQL UNIQUE 允许多个 NULL 共存，空字符串/0 会冲突）
+- UNIQUE 字段使用 `NOT NULL DEFAULT ''`（应用层与数据库层双重约束，保持一致性）
 - 时间字段 `int unsigned NOT NULL DEFAULT 0`（Model 基类自动写入 `create_time`/`update_time`，缺少则 SQL 错误）
 - 索引命名：唯一索引 `uk_字段名`，普通索引 `idx_字段名`，复合索引 `idx_字段1_字段2`
 
@@ -127,7 +127,7 @@ CREATE TABLE `xphp_prompt` (
 -- 表结构: xphp_keyword --
 CREATE TABLE `xphp_keyword` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `word` varchar(100) DEFAULT NULL COMMENT '关键词文本（UNIQUE，应用层强制非空）',
+  `word` varchar(100) NOT NULL DEFAULT '' COMMENT '关键词文本',
   `pinyin` varchar(200) NOT NULL DEFAULT '' COMMENT '拼音',
   `source` varchar(20) NOT NULL DEFAULT 'manual' COMMENT '来源：manual/ai/csv',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '0停用1启用',
@@ -150,7 +150,7 @@ CREATE TABLE `xphp_page` (
   `title` varchar(200) NOT NULL DEFAULT '' COMMENT '页面标题',
   `keywords` varchar(500) NOT NULL DEFAULT '' COMMENT 'meta keywords',
   `description` varchar(500) NOT NULL DEFAULT '' COMMENT 'meta description',
-  `content` longtext COMMENT '完整HTML落地页内容',
+  `content` mediumtext COMMENT '完整HTML落地页内容',
   `ai_config_id` int(11) unsigned DEFAULT NULL COMMENT '使用的AI配置ID',
   `prompt_id` int(11) unsigned DEFAULT NULL COMMENT '使用的提示词ID',
   `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0草稿1已发布',
@@ -198,7 +198,8 @@ CREATE TABLE `xphp_task_log` (
   PRIMARY KEY (`id`),
   KEY `idx_task_id` (`task_id`),
   KEY `idx_task_id_start_time` (`task_id`, `start_time`),
-  KEY `idx_start_time` (`start_time`)
+  KEY `idx_start_time` (`start_time`),
+  KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务执行日志';
 -- <fen> --
 ```
@@ -236,9 +237,11 @@ INSERT INTO `xphp_task` (`name`, `type`, `cron_desc`, `status`, `create_time`, `
 
 ### 2.6 修改 `3_insert_xphp_config_part1.sql`
 
-在现有 8 条 config 记录末尾追加 5 条新记录（推送配置3条 + Cron安全配置2条）：
+在现有 8 条 config 记录末尾追加 7 条新记录（站点配置2条 + 推送配置3条 + Cron安全配置2条）：
 
 ```sql
+INSERT INTO `xphp_config` (`name`, `config_key`, `config_value`, `config_type`, `status`) VALUES ('网站名称', 'site_name', '', 0, 1);-- <fen> --
+INSERT INTO `xphp_config` (`name`, `config_key`, `config_value`, `config_type`, `status`) VALUES ('网站URL', 'site_url', '', 0, 1);-- <fen> --
 INSERT INTO `xphp_config` (`name`, `config_key`, `config_value`, `config_type`, `status`) VALUES ('百度站点域名', 'baidu_site', '', 0, 1);-- <fen> --
 INSERT INTO `xphp_config` (`name`, `config_key`, `config_value`, `config_type`, `status`) VALUES ('百度普通收录Token', 'baidu_token', '', 0, 1);-- <fen> --
 INSERT INTO `xphp_config` (`name`, `config_key`, `config_value`, `config_type`, `status`) VALUES ('百度快速收录Token', 'baidu_fast_token', '', 0, 1);-- <fen> --
@@ -481,7 +484,10 @@ class Prompt extends Model
                 ->where('type', $prompt['type'])
                 ->where('direction', $prompt['direction'] ?? '')
                 ->setField('is_active', 0);
-            db('prompt')->where('id', $id)->setField('is_active', 1);
+            $res = db('prompt')->where('id', $id)->setField('is_active', 1);
+            if (!$res) {
+                throw new \Exception('激活失败');
+            }
         });
         return (bool)$r;
     }
@@ -562,7 +568,7 @@ class Keyword extends Model
 
         $title = $seoMeta['title'] ?: $keyword['word'];
         $r = pdo()->trans(function () use ($keywordId, $urlPath, $title, $seoMeta, $content, $result, $promptRow) {
-            model('common.page')->save([
+            $res = model('common.page')->save([
                 'keyword_id' => $keywordId,
                 'url_path' => $urlPath,
                 'title' => $title,
@@ -573,6 +579,9 @@ class Keyword extends Model
                 'prompt_id' => $promptRow ? $promptRow['id'] : null,
                 'status' => 1,
             ]);
+            if (!$res) {
+                throw new \Exception('页面保存失败');
+            }
         });
         if ($r) {
             model('common.task')->execSitemap();
@@ -1167,7 +1176,10 @@ class Keyword extends Cp
             $tmp = model($this->model)->where('status', 0)->find($id);
             if ($tmp) {
                 $ok = pdo()->trans(function () use ($tmp) {
-                    $tmp->del();
+                    $res = $tmp->del();
+                    if (!$res) {
+                        throw new \Exception('删除失败');
+                    }
                 });
                 if ($ok) $count++;
             }
@@ -1445,7 +1457,10 @@ class Task
     {
         if ($this->isPost()) {
             $r = pdo()->trans(function () use ($req) {
-                model('common.task')->save($req);
+                $res = model('common.task')->save($req);
+                if (!$res) {
+                    throw new \Exception('保存失败');
+                }
             });
             $this->_jump(['添加成功', '添加失败'], $r, $this->jumpUrl);
         }
@@ -1459,7 +1474,10 @@ class Task
         if ($this->isPost()) {
             unset($req['type']);
             $r = pdo()->trans(function () use ($id, $req) {
-                model('common.task')->find($id)->save($req);
+                $res = model('common.task')->find($id)->save($req);
+                if (!$res) {
+                    throw new \Exception('修改失败');
+                }
             });
             $this->_jump(['修改成功', '修改失败'], $r, $this->jumpUrl);
         }
@@ -1477,7 +1495,10 @@ class Task
             $r = model('common.task')->find($id);
             if ($r) {
                 $ok = pdo()->trans(function () use ($r) {
-                    $r->del();
+                    $res = $r->del();
+                    if (!$res) {
+                        throw new \Exception('删除失败');
+                    }
                 });
                 if ($ok) $count++;
             }
@@ -1553,7 +1574,7 @@ class Site
 }
 ```
 
-配套模板 `template/default/site/dispatch.html`，仅 `{:echo($content)}`，不使用布局包裹。
+配套模板 `template/default/site/dispatch.html`，仅 `{$content|raw}`，不使用布局包裹。
 
 ### 6.2 Cron
 
@@ -1730,7 +1751,7 @@ return [
 
 | 文件 | 说明 |
 |------|------|
-| `template/default/site/dispatch.html` | 仅 `{:echo($content)}`，不使用布局包裹 |
+| `template/default/site/dispatch.html` | 仅 `{$content|raw}`，不使用布局包裹 |
 
 ---
 
@@ -1794,7 +1815,7 @@ class Index
 | 12 | AI 轮询容错 | `ai_chat()` |
 | 13 | 路由参数校验（path 非空 + ≤200，密钥字母数字） | Site Controller + `:string` 路由规则 |
 | 14 | `setInc` 原子递增 | `ai_chat()` |
-| 15 | 事务包裹 page + has_page | Keyword Model `generatePage()` |
+| 15 | 事务包裹 page + has_page，闭包内检查返回值失败抛异常 | Keyword Model `generatePage()` |
 | 16 | 重写先临时变量再更新 | Page Model `rewriteByAi()` |
 | 17 | 已发布 url_path 不可修改 | Page Controller `edit()` 后端强制拒绝 + 前端 readonly |
 | 18 | 删除前检查关联（控制器层，因 Model::del() 为 final 不检查 errors） | Keyword/Task Controller `del()` |
