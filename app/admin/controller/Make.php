@@ -33,8 +33,7 @@ class Make
                 cli('make:ctrl admin@'.$sign.' _cp -f');
                 // 生成模板
                 cli('make:view admin@'.$sign.' index index -f');
-                cli('make:view admin@'.$sign.' add add -f');
-                cli('make:view admin@'.$sign.' edit edit -f');
+                cli('make:view admin@'.$sign.' _form _form -f');
                 $this->success('MVC生成成功', 'index');
             } elseif ($cmd == 'remove_mvc') {
                 // 移除MVC

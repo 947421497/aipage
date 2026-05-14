@@ -29,7 +29,7 @@ CREATE TABLE `xphp_menu` (
 CREATE TABLE `xphp_user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `username` varchar(20) NOT NULL DEFAULT '' COMMENT '用户',
-  `password` varchar(32) NOT NULL DEFAULT '' COMMENT '密码',
+  `password` varchar(255) NOT NULL DEFAULT '' COMMENT '密码',
   `nickname` varchar(20) NOT NULL DEFAULT '' COMMENT '昵称',
   `email` varchar(100) NOT NULL DEFAULT '' COMMENT '邮箱',
   `mobile` char(11) NOT NULL DEFAULT '' COMMENT '手机号',

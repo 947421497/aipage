@@ -21,7 +21,7 @@ class Csrf
         if (config_get('view.is_form_csrf', false)) {
             $this->setServerToken();
             $token = $this->getClientToken();
-            if ($token != $this->token && IS_POST && ($_SERVER['HTTP_HOST'] == Request::init()->getHost(__HISTORY__))) {
+            if (!hash_equals($this->token, $token) && IS_POST && ($_SERVER['HTTP_HOST'] == Request::init()->getHost(__HISTORY__))) {
                 halt('', 412);
             }
         }
@@ -33,7 +33,7 @@ class Csrf
     {
         $token = session('csrf_token');
         if (!$token) {
-            $token = md5(get_ip().microtime(true));
+            $token = bin2hex(random_bytes(32));
             session('csrf_token', $token);
         }
         $this->token = $token;

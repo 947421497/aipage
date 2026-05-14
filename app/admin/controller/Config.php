@@ -8,6 +8,11 @@ class Config extends Cp
     protected string $order = 'id ASC';
     protected int $limit = 0;
 
+    protected function _after_state(string $field, string $value, array $ids): void
+    {
+        $this->syncConfigFile();
+    }
+
     public function add(array $req)
     {
         if ($this->isPost()) {
@@ -17,7 +22,10 @@ class Config extends Cp
             }
             $this->_jump(['添加成功', '添加失败'], $r, $this->jumpUrl);
         }
-        return view();
+        if (!IS_AJAX) {
+            $this->_url('index');
+        }
+        return $this->_form(['is_edit' => false]);
     }
 
     public function edit(int $id, array $req)
@@ -27,13 +35,17 @@ class Config extends Cp
             $this->error('记录不存在');
         }
         if ($this->isPost()) {
+            $req['config_key'] = $model->config_key;
             $r = pdo()->trans(fn() => $model->save($req));
             if ($r) {
                 $this->syncConfigFile();
             }
             $this->_jump(['修改成功', '修改失败'], $r, $this->jumpUrl);
         }
-        return view()->with('vo', $model->toArray());
+        if (!IS_AJAX) {
+            $this->_url('index');
+        }
+        return $this->_form(['is_edit' => true, 'vo' => $model->toArray()]);
     }
 
     public function del(string $ids)
@@ -42,15 +54,22 @@ class Config extends Cp
         if (!$ids) {
             $this->error('请选择ID');
         }
-        $count = 0;
-        foreach ($ids as $id) {
-            $r = db('config')->where('id', $id)->delete();
-            if ($r) $count++;
+        $items = model($this->model)->where([['status', '=', 0], ['id', 'in', $ids]])->select();
+        if (empty($items)) {
+            $this->_jump(['删除成功', '删除失败，未停用或已禁删'], 0, $this->jumpUrl);
         }
+        $count = pdo()->trans(function () use ($items) {
+            $c = 0;
+            foreach ($items as $item) {
+                $item->del();
+                $c++;
+            }
+            return $c;
+        });
         if ($count > 0) {
             $this->syncConfigFile();
         }
-        $this->_jump(['删除成功', '删除失败'], $count, $this->jumpUrl);
+        $this->_jump(['删除成功', '删除失败，未停用或已禁删'], $count, $this->jumpUrl);
     }
 
     public function save_file()
@@ -67,17 +86,38 @@ class Config extends Cp
         $site = db('config')->where('status', 1)->order('id ASC')->column('config_value', 'config_key');
         $content = "<?php\nreturn " . var_export($site, true) . ';';
         $file = ROOT_PATH . '/app/index/config/site.php';
-        $tmp = $file . '.tmp.' . uniqid();
-        file_put_contents($tmp, $content);
-        rename($tmp, $file);
+        $tmp = $file . '.tmp.' . str_replace('.', '', (string)microtime(true)) . bin2hex(random_bytes(4));
+        $written = @file_put_contents($tmp, $content);
+        if ($written === false) {
+            @unlink($tmp);
+            return;
+        }
+        if (is_file($file)) {
+            @unlink($file);
+        }
+        if (!@rename($tmp, $file)) {
+            @unlink($tmp);
+            return;
+        }
         $this->clearConfigCache();
     }
 
     private function clearConfigCache(): void
     {
-        $dir = ROOT_PATH . '/runtime/index/config';
-        if (is_dir($dir)) {
-            dir_delete($dir);
+        $runtimePath = ROOT_PATH . '/runtime';
+        if (is_dir($runtimePath)) {
+            foreach (new \DirectoryIterator($runtimePath) as $dir) {
+                if ($dir->isDir() && !$dir->isDot()) {
+                    $configDir = $dir->getPathname() . '/config';
+                    if (is_dir($configDir)) {
+                        dir_delete($configDir);
+                    }
+                }
+            }
+        }
+        $globalConfigDir = $runtimePath . '/config';
+        if (is_dir($globalConfigDir)) {
+            dir_delete($globalConfigDir);
         }
     }
 }

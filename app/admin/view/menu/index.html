@@ -22,7 +22,7 @@
               <header class="card-header"><div class="card-title">菜单管理</div></header>
               <div class="card-body">
                 <div class="card-btns mb-2-5">
-                  <a href="{:url('add')}" class="btn btn-primary">添加</a>
+                  <a href="javascript:openModal('{:url('add')}','添加菜单')" class="btn btn-primary">添加</a>
                   <button type="button" class="btn btn-success" onclick="actionConfirm('启用','{:url('state?params=status-1')}');">启用</button>
                   <button type="button" class="btn btn-info" onclick="actionConfirm('停用','{:url('state?params=status-0')}');">停用</button>
                   <button type="button" class="btn btn-danger" onclick="actionConfirm('删除', '{:url('del')}');">删除</button>
@@ -43,91 +43,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                    {foreach $list as $nav}
-                      <tr>
-                        <td><div class="form-check"><input class="form-check-input ids" type="checkbox" name="ids" value="{$nav.id}" /></div></td>
-                        <td>{$nav.id}</td>
-                        <td style="padding-left:{:$nav['level']*20}px">
-                          {if $nav['level']>1:}<i class="mdi mdi-subdirectory-arrow-right" style="margin-right:5px"></i>{/if}
-                          <a href="{:url('edit',['id'=>$nav['id']])}">{$nav.title}</a>
-                        </td>
-                        <td>{$nav.href}</td>
-                        <td>{$nav.sign}</td>
-                        <td><i class="{$nav.icon}"></i></td>
-                        <td>{$nav.sort}</td>
-                        <td>
-                          {if $nav['status']==1:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$nav['id']])}','停用',2);" class="btn btn-sm btn-success">已启用</a>
-                          {else:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$nav['id']])}','启用',2);" class="btn btn-sm btn-secondary">已停用</a>
-                          {/if}
-                        </td>
-                        <td>
-                          <div class="btn-group btn-group-sm">
-                            <a href="{:url('edit',['id'=>$nav['id']])}" class="btn btn-primary">编辑</a>
-                            <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$nav['id']])}','删除',2);" class="btn btn-danger">删除</a>
-                          </div>
-                        </td>
-                      </tr>
-                    {if isset($nav['children']):}
-                    {foreach $nav['children'] as $sub}
-                      <tr>
-                        <td><div class="form-check"><input class="form-check-input ids" type="checkbox" name="ids" value="{$sub.id}" /></div></td>
-                        <td>{$sub.id}</td>
-                        <td style="padding-left:{:$sub['level']*20}px">
-                          <i class="mdi mdi-subdirectory-arrow-right" style="margin-right:5px"></i>
-                          <a href="{:url('edit',['id'=>$sub['id']])}">{$sub.title}</a>
-                        </td>
-                        <td>{$sub.href}</td>
-                        <td>{$sub.sign}</td>
-                        <td><i class="{$sub.icon}"></i></td>
-                        <td>{$sub.sort}</td>
-                        <td>
-                          {if $sub['status']==1:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$sub['id']])}','停用',2);" class="btn btn-sm btn-success">已启用</a>
-                          {else:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$sub['id']])}','启用',2);" class="btn btn-sm btn-secondary">已停用</a>
-                          {/if}
-                        </td>
-                        <td>
-                          <div class="btn-group btn-group-sm">
-                            <a href="{:url('edit',['id'=>$sub['id']])}" class="btn btn-primary">编辑</a>
-                            <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$sub['id']])}','删除',2);" class="btn btn-danger">删除</a>
-                          </div>
-                        </td>
-                      </tr>
-                    {if isset($sub['children']):}
-                    {foreach $sub['children'] as $third}
-                      <tr>
-                        <td><div class="form-check"><input class="form-check-input ids" type="checkbox" name="ids" value="{$third.id}" /></div></td>
-                        <td>{$third.id}</td>
-                        <td style="padding-left:{:$third['level']*20}px">
-                          <i class="mdi mdi-subdirectory-arrow-right" style="margin-right:5px"></i>
-                          <a href="{:url('edit',['id'=>$third['id']])}">{$third.title}</a>
-                        </td>
-                        <td>{$third.href}</td>
-                        <td>{$third.sign}</td>
-                        <td><i class="{$third.icon}"></i></td>
-                        <td>{$third.sort}</td>
-                        <td>
-                          {if $third['status']==1:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$third['id']])}','停用',2);" class="btn btn-sm btn-success">已启用</a>
-                          {else:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$third['id']])}','启用',2);" class="btn btn-sm btn-secondary">已停用</a>
-                          {/if}
-                        </td>
-                        <td>
-                          <div class="btn-group btn-group-sm">
-                            <a href="{:url('edit',['id'=>$third['id']])}" class="btn btn-primary">编辑</a>
-                            <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$third['id']])}','删除',2);" class="btn btn-danger">删除</a>
-                          </div>
-                        </td>
-                      </tr>
-                    {/foreach}
-                    {/if}
-                    {/foreach}
-                    {/if}
-                    {/foreach}
+                    {:echo(menu_table_rows($list))}
                     </tbody>
                   </table>
                 </div>
@@ -140,5 +56,6 @@
     </main>
 
     {include file='public/footer.html'}
+</div>
 </body>
 </html>

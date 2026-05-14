@@ -311,3 +311,13 @@ function csrf_field(string $name = 'csrf_token'): string
 {
     return "<input type='hidden' name='".$name."' value='".csrf_token($name)."'/>\r\n";
 }
+
+function menu_table_rows(array $list): string
+{
+    return \app\admin\model\Menu::renderTableRows($list);
+}
+
+function e(mixed $value): string
+{
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}

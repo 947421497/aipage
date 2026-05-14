@@ -1,21 +1,13 @@
-var $btn;
-var $form;
-var $tip;
+var _modal;
+
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || ''
+    }
+});
 
 function selectAll(checked) {
-    $('input[name="ids"]').prop('checked', checked);
-}
-
-function ajaxGet(url, refresh) {
-    refresh = refresh || 1;
-    $.get(url, function(res) {
-        toast(res.msg);
-        if (res.status === 1 && refresh === 1) {
-            setTimeout(function() {
-                location.reload();
-            }, 2000);
-        }
-    }, 'json');
+    $('.ids').prop('checked', checked);
 }
 
 function toast(msg, timer) {
@@ -34,10 +26,38 @@ function toast(msg, timer) {
     });
 }
 
+function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
+function stripScripts(html) {
+    return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+}
+
+function ajaxGet(url, refresh) {
+    if (refresh === undefined) refresh = true;
+    $.get(url, function(res) {
+        toast(res.msg);
+        if (res.status === 1 && refresh) {
+            setTimeout(function() {
+                location.reload();
+            }, 300);
+        }
+    }, 'json');
+}
+
 function ajaxConfirm(url, action, refresh) {
     action = action || '删除';
-    refresh = refresh || 1;
-    var modalHtml = '<div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content"><div class="modal-body">确认要' + action + '吗？</div><div class="modal-footer"><button type="button" class="btn btn-primary" id="confirmBtn">确认</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button></div></div></div></div>';
+    if (refresh === undefined) refresh = true;
+    var $existing = $('#confirmModal');
+    if ($existing.length) {
+        var existingModal = bootstrap.Modal.getInstance($existing[0]);
+        if (existingModal) existingModal.dispose();
+        $existing.remove();
+    }
+    var modalHtml = '<div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content"><div class="modal-body">确认要' + escapeHtml(action) + '吗？</div><div class="modal-footer"><button type="button" class="btn btn-primary" id="confirmBtn">确认</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button></div></div></div></div>';
     $('body').append(modalHtml);
     var confirmModalEl = document.getElementById('confirmModal');
     var confirmModal = new bootstrap.Modal(confirmModalEl);
@@ -53,16 +73,20 @@ function ajaxConfirm(url, action, refresh) {
 
 function actionConfirm(action, url) {
     var ids = [];
-    $('tbody input').each(function(index, el) {
-        if ($(this).prop('checked')) {
-            ids.push($(this).val());
-        }
+    $('.ids:checked').each(function() {
+        ids.push($(this).val());
     });
     if (ids.length === 0) {
         toast('请选择ID');
         return;
     }
-    var msg = '确认要' + action + '吗？<br/>' + ids.toString();
+    var msg = '确认要' + escapeHtml(action) + '吗？<br/>' + escapeHtml(ids.toString());
+    var $existing = $('#actionModal');
+    if ($existing.length) {
+        var existingModal = bootstrap.Modal.getInstance($existing[0]);
+        if (existingModal) existingModal.dispose();
+        $existing.remove();
+    }
     var modalHtml = '<div class="modal fade" id="actionModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body">' + msg + '</div><div class="modal-footer"><button type="button" class="btn btn-primary" id="actionBtn">确认</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button></div></div></div></div>';
     $('body').append(modalHtml);
     var actionModalEl = document.getElementById('actionModal');
@@ -74,7 +98,7 @@ function actionConfirm(action, url) {
                 toast(res.msg);
                 setTimeout(function() {
                     location.reload();
-                }, 2000);
+                }, 300);
             } else {
                 toast(res.msg);
             }
@@ -86,69 +110,80 @@ function actionConfirm(action, url) {
     actionModal.show();
 }
 
-function remoteUrl(url) {
-    $.get(url, function(res) {
-        if (res.status === 1) {
-            $('#remoteModal .table').html(res.table);
-            $('#remoteModal .modal-body').html('<pre>' + res.data + '</pre>');
+function openModal(url, title, size) {
+    title = title || '';
+    size = size || '';
+    var sizeClass = size ? 'modal-' + size : 'modal-lg';
+    $.get(url, function(html) {
+        var $formModal = $('#formModal');
+        if (!_modal && $formModal.length) {
+            _modal = new bootstrap.Modal($formModal[0]);
         }
-    }, 'json');
-    var remoteModal = new bootstrap.Modal(document.getElementById('remoteModal'));
-    remoteModal.show();
+        if (!_modal) {
+            toast('模态框未初始化');
+            return;
+        }
+        $('#formModalTitle').text(title);
+        $('#formModalBody').html(stripScripts(html));
+        $formModal.find('.modal-dialog').removeClass('modal-sm modal-lg modal-xl').addClass(sizeClass);
+        _modal.show();
+    }).fail(function() {
+        toast('请求失败，请稍后重试');
+    });
 }
 
-$(function() {
-    $('.submit-ajax').submit(function() {
-        var $form = $(this);
-        var url = $form.attr('action');
-        var data = $form.serialize();
-        var $btn = $form.find('[type="submit"]');
-        var originalText = $btn.val();
-        $btn.prop('disabled', true).val('提交中…');
-        $.post(url, data, function(res) {
-            toast(res.msg);
-            if (res.status === 1) {
+$(document).on('submit', '.submit-ajax', function() {
+    var $form = $(this);
+    var url = $form.attr('action');
+    var data = $form.serialize();
+    var $btn = $form.find('[type="submit"]');
+    var originalText = $btn.html();
+    var inModal = $form.closest('#formModal').length > 0;
+    $btn.prop('disabled', true).html('提交中…');
+    $.post(url, data, function(res) {
+        toast(res.msg);
+        if (res.status === 1) {
+            if (inModal) {
+                var $formModal = $('#formModal');
+                if ($formModal.length) {
+                    $formModal.one('hidden.bs.modal', function() {
+                        location.reload();
+                    });
+                }
+                if (_modal) {
+                    _modal.hide();
+                } else if ($formModal.length) {
+                    bootstrap.Modal.getInstance($formModal[0]).hide();
+                } else {
+                    location.reload();
+                }
+            } else {
                 var $ref = $form.find('[name="referer"]');
                 if ($ref.length) {
                     var referer = $ref.val();
                     if (referer && referer !== '__HISTORY__' && referer !== '__ROOT__/') {
-                        setTimeout(function() {
-                            location.href = referer;
-                        }, 2000);
+                        setTimeout(function() { location.href = referer; }, 1500);
                     } else {
-                        var $history = $('[name="referer"]');
-                        if ($history.length) {
-                            history.go(-1);
+                        if (res.url) {
+                            setTimeout(function() { location.href = res.url; }, 1500);
                         } else {
-                            if (res.url) {
-                                setTimeout(function() {
-                                    location.href = res.url;
-                                }, 2000);
-                            } else {
-                                setTimeout(function() {
-                                    location.reload();
-                                }, 2000);
-                            }
+                            setTimeout(function() { location.reload(); }, 1500);
                         }
                     }
                 } else {
                     if (res.url) {
-                        setTimeout(function() {
-                            location.href = res.url;
-                        }, 2000);
+                        setTimeout(function() { location.href = res.url; }, 1500);
                     } else {
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
+                        setTimeout(function() { location.reload(); }, 1500);
                     }
                 }
-            } else {
-                $btn.prop('disabled', false).val(originalText);
             }
-        }, 'json').fail(function() {
-            toast('请求失败');
-            $btn.prop('disabled', false).val(originalText);
-        });
-        return false;
+        } else {
+            $btn.prop('disabled', false).html(originalText);
+        }
+    }, 'json').fail(function() {
+        toast('请求失败');
+        $btn.prop('disabled', false).html(originalText);
     });
+    return false;
 });

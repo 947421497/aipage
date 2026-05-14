@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace app\admin\controller;
 use xphp\core\Jump;
+use xphp\core\View;
 
 abstract class Cp
 {
@@ -38,7 +39,10 @@ abstract class Cp
             });
             $this->_jump(['添加成功', '添加失败'], $r, $this->jumpUrl);
         }
-        return view();
+        if (!IS_AJAX) {
+            $this->_url('index');
+        }
+        return $this->_form(['is_edit' => false]);
     }
 
     // 修改
@@ -54,7 +58,10 @@ abstract class Cp
             });
             $this->_jump(['修改成功', '修改失败'], $r, $this->jumpUrl);
         }
-        return view()->with('vo', $model->toArray());
+        if (!IS_AJAX) {
+            $this->_url('index');
+        }
+        return $this->_form(['is_edit' => true, 'vo' => $model->toArray()]);
     }
 
     // 删除
@@ -64,19 +71,19 @@ abstract class Cp
         if (!$ids) {
             $this->error('请选择ID');
         }
-        $map = [];
-        $map['status'] = 0;
         $model = model($this->model);
-        $count = 0; //成功删除数量
-        foreach ($ids as $id) {
-            $tmp = $model->where($map)->find($id);
-            if ($tmp) {
-                $ok = pdo()->trans(function () use ($tmp) {
-                    $tmp->del();
-                });
-                if ($ok) $count++;
-            }
+        $items = $model->where([['status', '=', 0], ['id', 'in', $ids]])->select();
+        if (empty($items)) {
+            $this->_jump(['删除成功', '删除失败，未停用或已禁删'], 0, $this->jumpUrl);
         }
+        $count = pdo()->trans(function () use ($items) {
+            $c = 0;
+            foreach ($items as $item) {
+                $item->del();
+                $c++;
+            }
+            return $c;
+        });
         $this->_jump(['删除成功', '删除失败，未停用或已禁删'], $count, $this->jumpUrl);
     }
 
@@ -100,8 +107,23 @@ abstract class Cp
             $map[] = ['id', 'in', $ids];
         }
         $model = model($this->model);
-        $r = $model->where($map)->setField($field, $value);
-        $model->widgetReload(); // 重载部件缓存
+        $r = pdo()->trans(function () use ($model, $map, $field, $value, $ids) {
+            $result = $model->where($map)->setField($field, $value);
+            if ($result) {
+                $this->_after_state($field, $value, $ids);
+            }
+            return $result;
+        });
+        $model->widgetReload();
         $this->_jump([$title . '成功', $title . '失败'], $r, $this->jumpUrl);
+    }
+
+    protected function _form(array $vars = []): string
+    {
+        return View::init()->fetch('_form', $vars);
+    }
+
+    protected function _after_state(string $field, string $value, array $ids): void
+    {
     }
 }

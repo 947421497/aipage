@@ -25,7 +25,7 @@
                   <img src="{:get_avatar($vo['avatar'], $vo['qq'])}" class="rounded-circle me-3" width="80" height="80" alt="avatar">
                   <div class="flex-grow-1">
                     <h5 class="mb-1">{$vo.nickname} <small class="text-muted">v{$vo.level}</small></h5>
-                    <a href="{:url('profile/edit')}" class="btn btn-sm btn-outline-primary">修改头像</a>
+                    <a href="javascript:openModal('{:url('profile/edit')}','修改资料')" class="btn btn-sm btn-outline-primary">修改资料</a>
                     <small class="text-muted ms-2">支持 JPG、PNG 格式</small>
                   </div>
                 </div>

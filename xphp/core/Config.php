@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 namespace xphp\core;
+
 /**
  * 配置处理类
  */
@@ -15,9 +16,9 @@ class Config
 {
     use Single;
 
-    protected static array $items = []; // 配置项
-    protected string $cachePath; // 缓存路径
-    protected array $fileList = []; // 配置文件列表
+    protected static array $items = [];
+    protected string $cachePath;
+    protected array $fileList = [];
 
     private function __construct(string|array $load = [])
     {
@@ -27,45 +28,82 @@ class Config
         }
     }
 
-    // 加载配置
     public function load(string|array $load = []): void
     {
         if (!empty($load)) {
             $fileList = $this->parseFileList($load);
             $this->fileList = array_merge($this->fileList, $fileList);
         }
-        $last_time = file_last_time($this->fileList);
-        $cache_file = $this->cachePath . '/' . md5(json_encode($this->fileList) . $last_time) . '.php';
-        if (file_exists($cache_file)) {
-            $data = include $cache_file;
-            self::$items = is_array($data) ? $data : [];
-        } else {
-            dir_delete($this->cachePath);
-            foreach ($this->fileList as $file) {
-                if (file_exists($file)) {
-                    $ext = pathinfo($file, PATHINFO_EXTENSION);
-                    if ($ext == 'php') {
-                        $data = include $file;
-                        if (is_array($data)) {
-                            arr_key_case($data);
-                            $name = basename($file, '.php');
-                            self::$items[$name] = isset(self::$items[$name]) ? array_replace_recursive(self::$items[$name], $data) : $data;
-                        }
-                    } elseif ($ext == 'env') {
-                        $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
-                        if (is_array($data)) {
-                            arr_key_case($data);
-                            self::$items = array_replace_recursive(self::$items, $data);
-                        }
-                    }
+
+        $lastTime = file_last_time($this->fileList);
+        $cacheFile = $this->cachePath . '/' . md5(json_encode($this->fileList) . $lastTime) . '.php';
+
+        if (file_exists($cacheFile)) {
+            $data = $this->loadCacheFile($cacheFile);
+            if (is_array($data)) {
+                self::$items = $data;
+                return;
+            }
+        }
+
+        dir_delete($this->cachePath);
+        self::$items = $this->loadConfigFiles();
+        $this->saveCacheFile($cacheFile, self::$items);
+    }
+
+    protected function loadCacheFile(string $file): ?array
+    {
+        try {
+            $data = @include $file;
+        } catch (\Throwable) {
+            return null;
+        }
+        return is_array($data) ? $data : null;
+    }
+
+    protected function loadConfigFiles(): array
+    {
+        $config = [];
+        foreach ($this->fileList as $file) {
+            if (!file_exists($file)) continue;
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
+            if ($ext == 'php') {
+                try {
+                    $data = @include $file;
+                } catch (\Throwable) {
+                    continue;
+                }
+                if (is_array($data)) {
+                    arr_key_case($data);
+                    $name = basename($file, '.php');
+                    $config[$name] = isset($config[$name]) ? array_replace_recursive($config[$name], $data) : $data;
+                }
+            } elseif ($ext == 'env') {
+                $data = @parse_ini_file($file, true, INI_SCANNER_TYPED);
+                if (is_array($data)) {
+                    arr_key_case($data);
+                    $config = array_replace_recursive($config, $data);
                 }
             }
-            $cacheContent = "<?php\nreturn " . var_export(self::$items, true) . ';';
-            file_put_contents($cache_file, $cacheContent);
+        }
+        return $config;
+    }
+
+    protected function saveCacheFile(string $file, array $data): void
+    {
+        $content = "<?php\nreturn " . var_export($data, true) . ';';
+        $tempFile = $file . '.tmp.' . str_replace('.', '', (string)microtime(true)) . bin2hex(random_bytes(4));
+        $written = @file_put_contents($tempFile, $content);
+        if ($written === false) {
+            @unlink($tempFile);
+            return;
+        }
+        if (!@rename($tempFile, $file)) {
+            @unlink($tempFile);
+            return;
         }
     }
 
-    // 解析加载文件列表
     private function parseFileList(string|array $load = []): array
     {
         if (is_string($load)) {
@@ -75,22 +113,19 @@ class Config
         return array_reduce($list, 'array_merge', []);
     }
 
-    // 获取配置项
-    public function get(string $name = '', mixed $default = '', bool $to_array = false): mixed
+    public function get(string $name = '', mixed $default = '', bool $toArray = false): mixed
     {
         if (empty($name)) {
             return self::$items;
         }
-        return arr_get(self::$items, $name, $default, $to_array);
+        return arr_get(self::$items, $name, $default, $toArray);
     }
 
-    // 设置配置项
     public function set(string $name, mixed $value = ''): mixed
     {
         return arr_set(self::$items, $name, $value);
     }
 
-    // 是否存在配置项
     public function has(string $name): bool
     {
         return arr_has(self::$items, $name);

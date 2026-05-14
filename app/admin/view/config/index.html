@@ -27,7 +27,7 @@
                 </div>
 
                 <div class="card-btns mb-2-5">
-                  <a href="{:url('add')}" class="btn btn-primary me-1"><i class="mdi mdi-plus"></i> 新增</a>
+                  <a href="javascript:openModal('{:url('add')}','新增配置')" class="btn btn-primary me-1"><i class="mdi mdi-plus"></i> 新增</a>
                   <button type="button" class="btn btn-info me-1" onclick="ajaxConfirm('{:url('save_file')}','生成配置文件');"><i class="mdi mdi-file-refresh"></i> 生成配置</button>
                   <button type="button" class="btn btn-danger" onclick="actionConfirm('删除','{:url('del')}');"><i class="mdi mdi-window-close"></i> 删除</button>
                   <small class="form-text ms-2">修改已自动同步，生成配置按钮用于手动重新生成</small>
@@ -66,15 +66,15 @@
                         <td>{$vo.config_value}</td>
                         <td>
                           {if $vo['status']==1:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',2);" class="text-success" data-bs-toggle="tooltip" title="点击停用">已启用</a>
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',true);" class="text-success" data-bs-toggle="tooltip" title="点击停用">已启用</a>
                           {else:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',2);" class="text-secondary" data-bs-toggle="tooltip" title="点击启用">已停用</a>
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',true);" class="text-secondary" data-bs-toggle="tooltip" title="点击启用">已停用</a>
                           {/if}
                         </td>
                         <td>
                           <div class="btn-group btn-group-sm">
-                            <a class="btn btn-primary" href="{:url('edit',['id'=>$vo['id']])}">编辑</a>
-                            <a class="btn btn-danger" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);">删除</a>
+                            <a class="btn btn-primary" href="javascript:openModal('{:url('edit',['id'=>$vo['id']])}','编辑配置')">编辑</a>
+                            <a class="btn btn-danger" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',true);">删除</a>
                           </div>
                         </td>
                       </tr>

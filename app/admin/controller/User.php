@@ -19,4 +19,17 @@ class User extends Cp
         }
         return $where;
     }
+
+    public function state(string $ids, string $params)
+    {
+        [$field, $value] = name_parse($params, 'status', '-');
+        if ($field === 'status' && $value === '0') {
+            $currentId = session('user.id');
+            $idList = ids_filter($ids, true);
+            if (in_array($currentId, $idList)) {
+                $this->error('不能停用当前登录用户');
+            }
+        }
+        parent::state($ids, $params);
+    }
 }

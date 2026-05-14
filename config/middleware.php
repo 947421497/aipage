@@ -25,7 +25,7 @@ return [
     // 框架中间件
     'framework' => [
         'controller_start' => [
-           // \middleware\Csrf::class, // 表单令牌验证
+           \middleware\Csrf::class, // 表单令牌验证
         ], // 控制器开始
         'database_query' => [], // 查询sql
         'database_execute' => [], // 执行sql

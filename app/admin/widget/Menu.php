@@ -11,6 +11,6 @@ class Menu extends Widget
 
     public function set($id = '', array $options = [])
     {
-        return MenuModel::getTree();
+        return MenuModel::getTree(true);
     }
 }

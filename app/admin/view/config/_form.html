@@ -1,0 +1,21 @@
+<form class="site-form submit-ajax" action="{:url($is_edit ? 'edit' : 'add')}" method="post">
+{if $is_edit:}
+<input type="hidden" name="id" value="{$vo.id}" />
+{/if}
+<div class="mb-3">
+  <label class="form-label" for="name">*名称</label>
+  <input type="text" class="form-control" id="name" name="name" placeholder="配置项名称，如：网站标题" value="{$vo.name|default=''}" required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="config_key">*键名</label>
+  <input type="text" class="form-control" id="config_key" name="config_key" placeholder="英文键名，如：site_title" value="{$vo.config_key|default=''}" {if $is_edit:}readonly="readonly"{/if} required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="config_value">*键值</label>
+  <input type="text" class="form-control" id="config_value" name="config_value" placeholder="配置值" value="{$vo.config_value|default=''}" required />
+</div>
+<div class="mb-3">
+  <button type="submit" class="btn btn-primary">{if $is_edit:}确定{else:}添加{/if}</button>
+  <button type="button" class="btn btn-default" data-bs-dismiss="modal">取消</button>
+</div>
+</form>

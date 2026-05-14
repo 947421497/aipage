@@ -40,7 +40,7 @@
                   </form>
                 </div>
                 <div class="card-btns mb-2-5">
-                  <a href="{:url('add')}" class="btn btn-primary me-1"><i class="mdi mdi-plus"></i> 添加</a>
+                  <a href="javascript:openModal('{:url('add')}','添加[xx]')" class="btn btn-primary me-1"><i class="mdi mdi-plus"></i> 添加</a>
                   <button type="button" class="btn btn-success me-1" onclick="actionConfirm('启用','{:url('state?params=status-1')}');"><i class="mdi mdi-check"></i> 启用</button>
                   <button type="button" class="btn btn-warning me-1" onclick="actionConfirm('停用','{:url('state?params=status-0')}');"><i class="mdi mdi-block-helper"></i> 停用</button>
                   <button type="button" class="btn btn-danger" onclick="actionConfirm('删除', '{:url('del')}');"><i class="mdi mdi-window-close"></i> 删除</button>
@@ -49,7 +49,7 @@
                   <table class="table table-bordered">
                     <thead>
                     <tr>
-                      <th><div class="form-check"><input class="form-check-input" type="checkbox" id="check-all"><label class="form-check-label" for="check-all"></label></div></th>
+                      <th><div class="form-check"><input class="form-check-input" type="checkbox" id="check-all" onclick="selectAll(this.checked)"><label class="form-check-label" for="check-all"></label></div></th>
                       <th>ID</th>
                       <th>标题</th>
                       <th>状态</th>
@@ -61,7 +61,7 @@
                     <tr>
                       <td><div class="form-check"><input type="checkbox" class="form-check-input ids" name="ids[]" value="{$vo.id}" id="ids-{$vo.id}"><label class="form-check-label" for="ids-{$vo.id}"></label></div></td>
                       <td>{$vo.id}</td>
-                      <td><a href="{:url('edit',['id'=>$vo['id']])}">{$vo.title}</a></td>
+                      <td><a href="javascript:openModal('{:url('edit',['id'=>$vo['id']])}','编辑[xx]')">{$vo.title}</a></td>
                       <td>
                         {if $vo['status']==1:}
                         <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',2);" class="text-success" data-bs-toggle="tooltip" title="点击停用">已启用</a>
@@ -71,7 +71,7 @@
                       </td>
                       <td>
                         <div class="btn-group btn-group-sm">
-                          <a href="{:url('edit',['id'=>$vo['id']])}" class="btn btn-default" data-bs-toggle="tooltip" title="编辑"><i class="mdi mdi-pencil"></i></a>
+                          <a href="javascript:openModal('{:url('edit',['id'=>$vo['id']])}','编辑[xx]')" class="btn btn-default" data-bs-toggle="tooltip" title="编辑"><i class="mdi mdi-pencil"></i></a>
                           <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);" class="btn btn-default" data-bs-toggle="tooltip" title="删除"><i class="mdi mdi-window-close"></i></a>
                         </div>
                       </td>

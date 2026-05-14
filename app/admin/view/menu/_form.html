@@ -1,0 +1,40 @@
+<form class="site-form submit-ajax" action="{:url($is_edit ? 'edit' : 'add')}" method="post">
+{if $is_edit:}
+<input type="hidden" name="id" value="{$vo.id}" />
+{/if}
+<div class="alert alert-light">
+  可用图标：<a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">https://pictogrammers.com/library/mdi/</a>
+</div>
+<div class="mb-3">
+  <label class="form-label">*上级菜单</label>
+  {:form_select('parent_id', $parentOptions, $is_edit ? $vo['parent_id'] : 0, 'class="form-select"')}
+</div>
+<div class="mb-3">
+  <label class="form-label" for="title">*标题</label>
+  <input type="text" class="form-control" id="title" name="title" placeholder="请输入标题" value="{$vo.title|default=''}" required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="href">链接</label>
+  <input type="text" class="form-control" id="href" name="href" placeholder="控制器/方法(一级菜单可留空)" value="{$vo.href|default=''}" />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="sign">*标识</label>
+  <input type="text" class="form-control" id="sign" name="sign" placeholder="请输入标识" value="{$vo.sign|default=''}" required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="icon">*图标</label>
+  <input type="text" class="form-control" id="icon" name="icon" placeholder="图标样式" value="{$vo.icon|default='mdi mdi-tag'}" required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="sort">*排序</label>
+  <input type="text" class="form-control" id="sort" name="sort" placeholder="请输入排序值" value="{$vo.sort|default='100'}" required />
+</div>
+<div class="mb-3">
+  <label class="form-label">*禁删</label>
+  {:form_radio('is_sys', ['否', '是'], $is_edit ? $vo['is_sys'] : 0)}
+</div>
+<div class="mb-3">
+  <button type="submit" class="btn btn-primary">{if $is_edit:}修改{else:}添加{/if}</button>
+  <button type="button" class="btn btn-default" data-bs-dismiss="modal">取消</button>
+</div>
+</form>

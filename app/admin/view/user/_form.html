@@ -1,0 +1,58 @@
+<form class="site-form submit-ajax" action="{:url($is_edit ? 'edit' : 'add')}" method="post">
+{if $is_edit:}
+<input type="hidden" name="id" value="{$vo.id}" />
+{/if}
+<div class="mb-3">
+  <label class="form-label" for="username">*用户名</label>
+  <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名" value="{$vo.username|default=''}" {if $is_edit:}readonly="readonly"{/if} required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="nickname">*昵称</label>
+  <input type="text" class="form-control" id="nickname" name="nickname" placeholder="请输入昵称" value="{$vo.nickname|default=''}" required />
+</div>
+{if $is_edit:}
+<div class="mb-3">
+  <label class="form-label" for="level">*级别</label>
+  {:form_select('level','1=v1|v2|v3',$vo['level'],' class="form-control"')}
+</div>
+{/if}
+{if !$is_edit:}
+<div class="mb-3">
+  <label class="form-label" for="password">*登录密码</label>
+  <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" required />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="re_password">*确认密码</label>
+  <input type="password" class="form-control" id="re_password" name="re_password" placeholder="请确认密码" required />
+</div>
+{else:}
+<div class="mb-3">
+  <label class="form-label" for="password">修改密码</label>
+  <input type="password" class="form-control" id="password" name="password" placeholder="不修改请留空" />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="re_password">确认密码</label>
+  <input type="password" class="form-control" id="re_password" name="re_password" placeholder="不修改请留空" />
+</div>
+{/if}
+<div class="mb-3">
+  <label class="form-label" for="bio">格言</label>
+  <input type="text" class="form-control" id="bio" name="bio" placeholder="请输入格言" value="{$vo.bio|default=''}" />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="qq">QQ</label>
+  <input type="text" class="form-control" id="qq" name="qq" placeholder="请输入QQ" value="{$vo.qq|default=''}" />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="email">邮箱</label>
+  <input type="text" class="form-control" id="email" name="email" placeholder="请输入邮箱" value="{$vo.email|default=''}" />
+</div>
+<div class="mb-3">
+  <label class="form-label" for="mobile">手机</label>
+  <input type="text" class="form-control" id="mobile" name="mobile" placeholder="请输入手机号" value="{$vo.mobile|default=''}" />
+</div>
+<div class="mb-3">
+  <button type="submit" class="btn btn-primary">{if $is_edit:}确定{else:}添加{/if}</button>
+  <button type="button" class="btn btn-default" data-bs-dismiss="modal">取消</button>
+</div>
+</form>

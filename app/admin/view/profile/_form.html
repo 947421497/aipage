@@ -1,0 +1,27 @@
+<form class="site-form submit-ajax" action="{:url('profile/edit')}" method="post">
+<input type="hidden" name="id" value="{$vo.id}">
+<div class="mb-3">
+  <label for="nickname" class="form-label">*昵称</label>
+  <input type="text" id="nickname" name="nickname" class="form-control" placeholder="请输入昵称" value="{$vo.nickname}" required>
+</div>
+<div class="mb-3">
+  <label for="bio" class="form-label">格言</label>
+  <input type="text" id="bio" name="bio" class="form-control" placeholder="请输入格言" value="{$vo.bio}">
+</div>
+<div class="mb-3">
+  <label for="qq" class="form-label">QQ</label>
+  <input type="text" id="qq" name="qq" class="form-control" placeholder="请输入QQ号" value="{$vo.qq}">
+</div>
+<div class="mb-3">
+  <label for="email" class="form-label">邮箱</label>
+  <input type="text" id="email" name="email" class="form-control" placeholder="请输入邮箱" value="{$vo.email}">
+</div>
+<div class="mb-3">
+  <label for="mobile" class="form-label">手机</label>
+  <input type="text" id="mobile" name="mobile" class="form-control" placeholder="请输入手机号" value="{$vo.mobile}">
+</div>
+<div class="mb-3">
+  <button type="submit" class="btn btn-primary">保存</button>
+  <button type="button" class="btn btn-default" data-bs-dismiss="modal">取消</button>
+</div>
+</form>

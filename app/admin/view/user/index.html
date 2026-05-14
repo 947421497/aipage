@@ -49,7 +49,7 @@
                   </form>
                 </div>
                 <div class="card-btns mb-2-5">
-                  <a class="btn btn-primary me-1" href="{:url('add')}"><i class="mdi mdi-plus"></i> 新增</a>
+                  <a class="btn btn-primary me-1" href="javascript:openModal('{:url('add')}','新增用户')"><i class="mdi mdi-plus"></i> 新增</a>
                   <button type="button" class="btn btn-success me-1" onclick="actionConfirm('启用','{:url('state?params=status-1')}');"><i class="mdi mdi-check"></i> 启用</button>
                   <button type="button" class="btn btn-warning me-1" onclick="actionConfirm('停用','{:url('state?params=status-0')}');"><i class="mdi mdi-block-helper"></i> 停用</button>
                   <button type="button" class="btn btn-danger" onclick="actionConfirm('删除','{:url('del')}');"><i class="mdi mdi-window-close"></i> 删除</button>
@@ -83,21 +83,21 @@
                           </div>
                         </td>
                         <td>{$vo.id}</td>
-                        <td><a href="{:url('edit',['id'=>$vo['id']])}">{$vo.username}</a></td>
+                        <td><a href="javascript:openModal('{:url('edit',['id'=>$vo['id']])}','编辑用户')">{$vo.username}</a></td>
                         <td>{$vo.nickname}</td>
                         <td>v{$vo.level}</td>
                         <td>{$vo.create_time|get_time_ago}</td>
                         <td>
                           {if $vo['status']==1:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',2);" class="text-success" data-bs-toggle="tooltip" title="点击停用">已启用</a>
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',true);" class="text-success" data-bs-toggle="tooltip" title="点击停用">已启用</a>
                           {else:}
-                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',2);" class="text-secondary" data-bs-toggle="tooltip" title="点击启用">已停用</a>
+                          <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',true);" class="text-secondary" data-bs-toggle="tooltip" title="点击启用">已停用</a>
                           {/if}
                         </td>
                         <td>
                           <div class="btn-group btn-group-sm">
-                            <a class="btn btn-primary" href="{:url('edit',['id'=>$vo['id']])}">编辑</a>
-                            <a class="btn btn-danger" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',2);">删除</a>
+                            <a class="btn btn-primary" href="javascript:openModal('{:url('edit',['id'=>$vo['id']])}','编辑用户')">编辑</a>
+                            <a class="btn btn-danger" href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',true);">删除</a>
                           </div>
                         </td>
                       </tr>

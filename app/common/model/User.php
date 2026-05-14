@@ -30,11 +30,7 @@ class User extends Model
         if (empty($val)) {
             return $data['password'] ?? '';
         }
-        return $this->getEncryptPassword($val, $data['username']);
-    }
-    public function getEncryptPassword(string $password, string $salt = ''): string
-    {
-        return md5(md5($password) . $salt);
+        return password_hash($val, PASSWORD_BCRYPT, ['cost' => 12]);
     }
     protected function _after_update(array $before, array $after): void
     {
@@ -45,7 +41,7 @@ class User extends Model
     }
     protected function _before_delete(array $data): void
     {
-        $this->db = $this->db->where('id>1 AND status=0');
+        $this->db = $this->db->where([['id', '>', 1], ['status', '=', 0]]);
     }
     public function login(array $req, bool $isAdmin = false): bool
     {
@@ -72,7 +68,7 @@ class User extends Model
             $this->errors[] = '只有后台管理才能登录';
             return false;
         }
-        if ($user['password'] != $this->getEncryptPassword($req['password'], $user['username'])) {
+        if (!password_verify($req['password'], $user['password'])) {
             $this->errors[] = '密码错误';
             return false;
         }
@@ -93,12 +89,12 @@ class User extends Model
             return false;
         }
         $uid = session('user.id');
-        $user = $this->db->field('username,password')->where('id', $uid)->find();
-        if ($user['password'] != $this->getEncryptPassword($req['old_pwd'], $user['username'])) {
+        $user = $this->db->field('password')->where('id', $uid)->find();
+        if (!password_verify($req['old_pwd'], $user['password'])) {
             $this->errors[] = '旧密码错误';
             return false;
         }
-        $newPwd = $this->getEncryptPassword($req['new_pwd'], $user['username']);
+        $newPwd = password_hash($req['new_pwd'], PASSWORD_BCRYPT, ['cost' => 12]);
         $r = $this->db->where('id', $uid)->setField('password', $newPwd);
         if (!$r) {
             $this->errors[] = '修改失败';

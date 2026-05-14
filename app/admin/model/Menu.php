@@ -28,44 +28,97 @@ class Menu extends Model
 
     protected function _before_delete(array $data): void
     {
-        $this->db = $this->db->where('status=0 AND is_sys=0');
+        $this->db = $this->db->where([['status', '=', 0], ['is_sys', '=', 0]]);
     }
 
-    public static function getTree(): array
+    public static function getTree(bool $onlyActive = false): array
     {
-        $list = db('menu')->where('status=1')->order('sort ASC,id ASC')->select();
+        $query = db('menu');
+        if ($onlyActive) {
+            $query = $query->where('status=1');
+        }
+        $list = $query->order('sort ASC,id ASC')->select();
         return self::buildTree($list, 0);
     }
 
-    private static function buildTree(array $list, int $parentId = 0): array
+    private static function buildTree(array $list, int $parentId = 0, int $depth = 1): array
     {
         $tree = [];
         foreach ($list as $item) {
             if ((int)$item['parent_id'] === $parentId) {
-                $children = self::buildTree($list, (int)$item['id']);
+                $item['level'] = $depth;
+                $item['url'] = !empty($item['href']) ? url($item['href']) : 'javascript:void(0)';
+                $children = self::buildTree($list, (int)$item['id'], $depth + 1);
                 if (!empty($children)) {
                     $item['children'] = $children;
                 }
-                $item['level'] = self::calcLevel($list, (int)$item['id']);
-                $item['url'] = !empty($item['href']) ? url($item['href']) : 'javascript:void(0)';
                 $tree[] = $item;
             }
         }
         return $tree;
     }
 
-    private static function calcLevel(array $list, int $id): int
+    public static function renderTableRows(array $list): string
     {
-        $level = 1;
+        $html = '';
         foreach ($list as $item) {
-            if ((int)$item['id'] === $id) {
-                if ((int)$item['parent_id'] === 0) {
-                    return $level;
-                }
-                return $level + self::calcLevel($list, (int)$item['parent_id']);
+            $statusClass = (int)$item['status'] === 0 ? 'table-secondary opacity-60' : '';
+            $editUrl = url('edit', ['id' => $item['id']]);
+            $delUrl = url('del', ['ids' => $item['id']]);
+            $stateOnUrl = url('state?params=status-1', ['ids' => $item['id']]);
+            $stateOffUrl = url('state?params=status-0', ['ids' => $item['id']]);
+            $statusBtn = (int)$item['status'] === 1
+                ? '<a href="javascript:ajaxConfirm(\'' . $stateOffUrl . '\',\'停用\',true);" class="btn btn-sm btn-success">已启用</a>'
+                : '<a href="javascript:ajaxConfirm(\'' . $stateOnUrl . '\',\'启用\',true);" class="btn btn-sm btn-secondary">已停用</a>';
+            $arrow = (int)$item['level'] > 1 ? '<i class="mdi mdi-subdirectory-arrow-right" style="margin-right:5px"></i>' : '';
+
+            $html .= '<tr class="' . $statusClass . '">';
+            $html .= '<td><div class="form-check"><input class="form-check-input ids" type="checkbox" name="ids[]" value="' . htmlspecialchars((string)$item['id']) . '" /></div></td>';
+            $html .= '<td>' . htmlspecialchars((string)$item['id']) . '</td>';
+            $html .= '<td style="padding-left:' . ((int)$item['level'] * 20) . 'px">' . $arrow . '<a href="javascript:openModal(\'' . $editUrl . '\',\'编辑菜单\')">' . htmlspecialchars($item['title']) . '</a></td>';
+            $html .= '<td>' . htmlspecialchars($item['href']) . '</td>';
+            $html .= '<td>' . htmlspecialchars($item['sign']) . '</td>';
+            $html .= '<td><i class="' . htmlspecialchars($item['icon']) . '"></i></td>';
+            $html .= '<td>' . htmlspecialchars((string)$item['sort']) . '</td>';
+            $html .= '<td>' . $statusBtn . '</td>';
+            $html .= '<td><div class="btn-group btn-group-sm">';
+            $html .= '<a href="javascript:openModal(\'' . $editUrl . '\',\'编辑菜单\')" class="btn btn-primary">编辑</a>';
+            $html .= '<a href="javascript:ajaxConfirm(\'' . $delUrl . '\',\'删除\',true);" class="btn btn-danger">删除</a>';
+            $html .= '</div></td>';
+            $html .= '</tr>';
+
+            if (isset($item['children']) && !empty($item['children'])) {
+                $html .= self::renderTableRows($item['children']);
             }
         }
-        return $level;
+        return $html;
+    }
+
+    public static function getChildIds(array $parentIds): array
+    {
+        $result = [];
+        $visited = [];
+        $stack = $parentIds;
+        while (!empty($stack)) {
+            $newStack = [];
+            foreach ($stack as $id) {
+                if (isset($visited[$id])) {
+                    continue;
+                }
+                $visited[$id] = true;
+            }
+            $children = db('menu')->where([['parent_id', 'in', $stack]])->column('id');
+            if (empty($children)) {
+                break;
+            }
+            $children = array_filter($children, fn($id) => !isset($visited[$id]));
+            if (empty($children)) {
+                break;
+            }
+            $result = array_merge($result, $children);
+            $stack = $children;
+        }
+        return $result;
     }
 
     public static function getParentOptions(int $excludeId = 0): array
@@ -84,7 +137,7 @@ class Menu extends Model
         $result = [];
         foreach ($list as $item) {
             if ((int)$item['parent_id'] === $parentId && (int)$item['id'] !== $excludeId) {
-                if ($depth >= 9) continue;
+                if ($depth >= self::$maxDepth) continue;
                 $prefix = str_repeat('　├ ', $depth);
                 $item['html'] = $prefix;
                 $result[] = $item;
