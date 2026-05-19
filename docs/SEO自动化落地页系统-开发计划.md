@@ -49,11 +49,11 @@ app/
     ├── page/
     └── task/
 
-backup/seo/                              ← SQL 文件
-├── 1_drop_table.sql
-├── 2_create_table.sql
-├── 3_insert_xphp_config_part1.sql
-└── 3_insert_xphp_menu_part1.sql
+backup/bak_all_initialize/              ← SQL 文件（追加到现有文件）
+├── 1_drop_table.sql                     （追加6张表DROP）
+├── 2_create_table.sql                   （追加6张表CREATE）
+├── 3_insert_xphp_config_part1.sql       （追加7条配置）
+└── 3_insert_xphp_menu_part1.sql         （追加4个菜单）
 ```
 
 ---
@@ -99,7 +99,7 @@ S0 (数据库与公共函数)
 ### 4.2 里程碑验收标准
 
 #### S0 完成检查清单
-- [ ] `backup/seo/` 目录下 4 个 SQL 文件创建成功
+- [ ] `backup/bak_all_initialize/` 目录下 4 个 SQL 文件成功追加内容
 - [ ] `app/common.php` 末尾成功追加 7 个公共函数
 - [ ] 函数语法检查通过（`php -l app/common.php`）
 - [ ] 执行 SQL 能成功创建 6 张新表
@@ -152,6 +152,7 @@ S0 (数据库与公共函数)
 | 决策项 | 方案 | 理由 |
 |--------|------|------|
 | 公共函数位置 | 直接追加到 `app/common.php` | 遵循 XPHP 现有架构 |
+| SQL 文件位置 | 追加到 `backup/bak_all_initialize/` 现有文件 | 遵循框架备份规范，不创建单独目录 |
 | API Key 存储 | 明文存储 | 按用户要求，最简单方式 |
 | 锁文件位置 | `runtime/cache/seo_lock_{type}.lock` | 统一存储位置 |
 | 表前缀 | `xphp_` | 遵循框架默认 |

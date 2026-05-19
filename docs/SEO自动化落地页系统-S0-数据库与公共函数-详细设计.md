@@ -35,29 +35,32 @@
 
 ### 2.2 SQL 文件结构
 
-#### backup/seo/1_drop_table.sql
+> **注意**: 所有 SQL 直接追加到 `backup/bak_all_initialize/` 目录下的现有文件中。
+
+#### backup/bak_all_initialize/1_drop_table.sql（追加）
+在现有内容末尾追加 6 张表的 DROP 语句：
 ```sql
 -- 清空表: xphp_ai_config
 DROP TABLE IF EXISTS `xphp_ai_config`;
--- &lt;fen&gt; --
+-- <fen> --
 -- 清空表: xphp_prompt
 DROP TABLE IF EXISTS `xphp_prompt`;
--- &lt;fen&gt; --
+-- <fen> --
 -- 清空表: xphp_keyword
 DROP TABLE IF EXISTS `xphp_keyword`;
--- &lt;fen&gt; --
+-- <fen> --
 -- 清空表: xphp_page
 DROP TABLE IF EXISTS `xphp_page`;
--- &lt;fen&gt; --
+-- <fen> --
 -- 清空表: xphp_task
 DROP TABLE IF EXISTS `xphp_task`;
--- &lt;fen&gt; --
+-- <fen> --
 -- 清空表: xphp_task_log
 DROP TABLE IF EXISTS `xphp_task_log`;
--- &lt;fen&gt; --
+-- <fen> --
 ```
 
-#### backup/seo/2_create_table.sql
+#### backup/bak_all_initialize/2_create_table.sql（追加）
 在现有内容末尾追加 6 张表的 CREATE 语句（完整内容请参考统一需求文档）：
 - `xphp_ai_config`（16 字段）
 - `xphp_prompt`（9 字段）
@@ -66,10 +69,10 @@ DROP TABLE IF EXISTS `xphp_task_log`;
 - `xphp_task`（13 字段）
 - `xphp_task_log`（9 字段）
 
-每条用 `-- &lt;fen&gt; --` 分隔。
+每条用 `-- <fen> --` 分隔。
 
-#### backup/seo/3_insert_xphp_config_part1.sql
-追加 7 条 config 配置项：
+#### backup/bak_all_initialize/3_insert_xphp_config_part1.sql（追加）
+在现有内容末尾追加 7 条 config 配置项：
 - site_name
 - site_url
 - baidu_site
@@ -78,8 +81,8 @@ DROP TABLE IF EXISTS `xphp_task_log`;
 - cron_key（自动生成 32 位随机字符）
 - cron_allowed_ips
 
-#### backup/seo/3_insert_xphp_menu_part1.sql
-追加 4 个后台菜单：
+#### backup/bak_all_initialize/3_insert_xphp_menu_part1.sql（追加）
+在现有内容末尾追加 4 个后台菜单：
 - 关键词管理 (keyword/index)
 - 页面管理 (page/index)
 - AI引擎 (ai_config/index)
@@ -176,11 +179,10 @@ function render_prompt(string $template, array $vars): string
 
 | 操作 | 文件路径 | 说明 |
 |------|---------|------|
-| **创建目录** | backup/seo/ | SQL 文件目录 |
-| **创建文件** | backup/seo/1_drop_table.sql | 6 张表 DROP |
-| **创建文件** | backup/seo/2_create_table.sql | 6 张表 CREATE |
-| **创建文件** | backup/seo/3_insert_xphp_config_part1.sql | 7 条配置 |
-| **创建文件** | backup/seo/3_insert_xphp_menu_part1.sql | 4 个菜单 |
+| **修改文件** | backup/bak_all_initialize/1_drop_table.sql | 追加6张表的 DROP |
+| **修改文件** | backup/bak_all_initialize/2_create_table.sql | 追加6张表的 CREATE |
+| **修改文件** | backup/bak_all_initialize/3_insert_xphp_config_part1.sql | 追加7条配置 |
+| **修改文件** | backup/bak_all_initialize/3_insert_xphp_menu_part1.sql | 追加4个菜单 |
 | **修改文件** | app/common.php | 末尾追加 7 个函数 |
 
 ---

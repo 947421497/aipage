@@ -34,18 +34,17 @@
 
 | 操作 | 文件路径 | 说明 |
 |------|---------|------|
-| **创建目录** | `backup/seo/` | SQL 文件目录 |
-| **创建文件** | `backup/seo/1_drop_table.sql` | 修改：追加6张表的 DROP |
-| **创建文件** | `backup/seo/2_create_table.sql` | 修改：追加6张表的 CREATE |
-| **创建文件** | `backup/seo/3_insert_xphp_config_part1.sql` | 新增：7条配置项 |
-| **创建文件** | `backup/seo/3_insert_xphp_menu_part1.sql` | 新增：4个后台菜单 |
+| **修改文件** | `backup/bak_all_initialize/1_drop_table.sql` | 追加：6张表的 DROP |
+| **修改文件** | `backup/bak_all_initialize/2_create_table.sql` | 追加：6张表的 CREATE |
+| **修改文件** | `backup/bak_all_initialize/3_insert_xphp_config_part1.sql` | 追加：7条配置项 |
+| **修改文件** | `backup/bak_all_initialize/3_insert_xphp_menu_part1.sql` | 追加：4个后台菜单 |
 | **修改文件** | `app/common.php` | 追加：7个公共函数 |
 
 ### 关键功能说明
 
 #### 1. SQL 文件
-- **1_drop_table.sql**: 追加 6 张表的 DROP TABLE 语句，每条用 `-- &lt;fen&gt; --` 分隔
-- **2_create_table.sql**: 追加 6 张表的 CREATE TABLE 语句，每条用 `-- &lt;fen&gt; --` 分隔
+- **1_drop_table.sql**: 追加 6 张表的 DROP TABLE 语句，每条用 `-- <fen> --` 分隔
+- **2_create_table.sql**: 追加 6 张表的 CREATE TABLE 语句，每条用 `-- <fen> --` 分隔
 - **3_insert_xphp_config_part1.sql**: 追加 7 条 config 配置项
 - **3_insert_xphp_menu_part1.sql**: 追加 4 个后台菜单
 
@@ -62,7 +61,7 @@
 | `render_prompt()` | 提示词模板变量渲染 |
 
 ### 注意事项
-1. **SQL 格式**: 严格遵循现有 `backup/bak_all_initialize/` 目录下的格式
+1. **SQL 格式**: 严格遵循现有 `backup/bak_all_initialize/` 目录下的格式，追加到现有文件末尾
 2. **公共函数位置**: 必须追加在 `app/common.php` **文件末尾**
 3. **依赖框架函数**: 使用框架提供的 `db()`、`cache()`、`encrypt()`、`decrypt()` 等函数
 4. **安全性**: API Key 明文存储（按用户要求）
