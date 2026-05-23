@@ -33,7 +33,7 @@
 
 ### 3.1 Keyword 控制器
 - **继承**: app\admin\controller\Cp
-- **模型**: admin@keyword
+- **模型**: common@keyword
 - **功能**:
   - index(): 列表
   - add(): 新增

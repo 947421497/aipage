@@ -62,11 +62,11 @@ DROP TABLE IF EXISTS `xphp_task_log`;
 
 #### backup/bak_all_initialize/2_create_table.sql（追加）
 在现有内容末尾追加 6 张表的 CREATE 语句（完整内容请参考统一需求文档）：
-- `xphp_ai_config`（16 字段）
+- `xphp_ai_config`（15 字段）
 - `xphp_prompt`（9 字段）
-- `xphp_keyword`（8 字段）
-- `xphp_page`（14 字段）
-- `xphp_task`（13 字段）
+- `xphp_keyword`（9 字段）
+- `xphp_page`（15 字段）
+- `xphp_task`（15 字段）
 - `xphp_task_log`（9 字段）
 
 每条用 `-- <fen> --` 分隔。

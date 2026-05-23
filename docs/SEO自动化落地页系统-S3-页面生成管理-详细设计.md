@@ -34,7 +34,7 @@
 
 ### 3.1 Page 控制器
 - **继承**: app\admin\controller\Cp
-- **模型**: admin@page
+- **模型**: common@page
 - **功能**:
   - index(): 列表
   - add(): 新增

@@ -99,51 +99,28 @@ S0 (数据库与公共函数)
 ### 4.2 里程碑验收标准
 
 #### S0 完成检查清单
-- [ ] `backup/bak_all_initialize/` 目录下 4 个 SQL 文件成功追加内容
-- [ ] `app/common.php` 末尾成功追加 7 个公共函数
-- [ ] 函数语法检查通过（`php -l app/common.php`）
-- [ ] 执行 SQL 能成功创建 6 张新表
+- [ ] 文件交付：4 个 SQL 文件追加 + app/common.php 追加 7 个函数
+- [ ] 详细验证项参见 [S0 详细设计 · 第5章](SEO自动化落地页系统-S0-数据库与公共函数-详细设计.md)
 
 #### S1 完成检查清单
-- [ ] `app/common/model/` 下 2 个模型文件创建成功
-- [ ] `app/admin/controller/` 下 2 个控制器创建成功
-- [ ] `app/admin/view/` 下 4 个视图文件创建成功
-- [ ] `route/admin.php` 成功追加路由配置
-- [ ] 后台可访问 AI 配置页面
-- [ ] 后台可添加、编辑、删除 Prompt 模板
+- [ ] 文件交付：2 模型 + 2 控制器 + 4 视图 + 路由追加
+- [ ] 详细验证项参见 [S1 详细设计 · 第9章](SEO自动化落地页系统-S1-AI配置管理-详细设计.md)
 
 #### S2 完成检查清单
-- [ ] `app/common/model/Keyword.php` 创建成功
-- [ ] `app/admin/controller/Keyword.php` 创建成功
-- [ ] `app/admin/view/keyword/` 下视图文件创建成功
-- [ ] 后台可访问关键词管理页面
-- [ ] 后台可添加、编辑、删除关键词
-- [ ] 拼音 URL 自动生成正常
+- [ ] 文件交付：1 模型 + 1 控制器 + 2 视图 + 路由追加
+- [ ] 详细验证项参见 [S2 详细设计 · 第9章](SEO自动化落地页系统-S2-关键词管理-详细设计.md)
 
 #### S3 完成检查清单
-- [ ] `app/common/model/Page.php` 创建成功
-- [ ] `app/admin/controller/Page.php` 创建成功
-- [ ] `app/admin/view/page/` 下视图文件创建成功
-- [ ] 后台可访问页面管理页面
-- [ ] 可手动生成单页面
-- [ ] 页面状态转换正常（草稿 ←→ 发布）
+- [ ] 文件交付：1 模型 + 1 控制器 + 3 视图 + 路由追加
+- [ ] 详细验证项参见 [S3 详细设计 · 第9章](SEO自动化落地页系统-S3-页面生成管理-详细设计.md)
 
 #### S4 完成检查清单
-- [ ] `app/common/model/Task.php` 和 `TaskLog.php` 创建成功
-- [ ] `app/admin/controller/Task.php` 创建成功
-- [ ] `app/index/controller/Cron.php` 创建成功
-- [ ] `app/admin/view/task/` 下视图文件创建成功
-- [ ] 后台可访问任务管理页面
-- [ ] Cron 接口可正常触发
-- [ ] 任务执行日志记录正常
+- [ ] 文件交付：2 模型 + 2 控制器 + 3 视图 + 2 路由追加
+- [ ] 详细验证项参见 [S4 详细设计 · 第9章](SEO自动化落地页系统-S4-定时任务管理-详细设计.md)
 
 #### S5 完成检查清单
-- [ ] `app/index/controller/Index.php` 成功修改
-- [ ] `template/default/index/index.html` 成功修改
-- [ ] `route/index.php` 成功追加路由配置
-- [ ] `public/robots.txt` 成功修改
-- [ ] 落地页 URL 可正常访问
-- [ ] 首页展示最新页面列表
+- [ ] 文件交付：1 控制器修改 + 1 视图修改 + 1 路由追加 + 1 文件修改
+- [ ] 详细验证项参见 [S5 详细设计 · 第9章](SEO自动化落地页系统-S5-前台展示-详细设计.md)
 
 ---
 

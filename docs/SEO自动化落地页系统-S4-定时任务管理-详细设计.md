@@ -14,7 +14,7 @@
 管理定时任务和 Cron 触发，支持批量生成页面、百度推送、Sitemap 生成等功能。
 
 ### 1.2 依赖关系
-- **依赖 S0**: 公共函数（ai_chat()、baidu_push()、flock 锁
+- **依赖 S0**: 公共函数（ai_chat()、baidu_push()）
 - **依赖 S3**: 页面管理
 
 ---
@@ -39,7 +39,7 @@
 
 ### 3.1 Task 控制器（后台）
 - **继承**: app\admin\controller\Cp
-- **模型**: admin@task
+- **模型**: common@task
 - **功能**:
   - index(): 列表
   - add(): 新增
@@ -106,7 +106,7 @@
 
 | 依赖 | 说明 |
 |------|------|
-| S0 公共函数 | ai_chat()、baidu_push()、flock 锁 |
+| S0 公共函数 | ai_chat()、baidu_push() |
 | S3 页面管理 | 页面生成 |
 | Task 模型 | model('common@task') |
 | TaskLog 模型 | model('common@task_log') |

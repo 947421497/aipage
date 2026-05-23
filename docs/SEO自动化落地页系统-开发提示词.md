@@ -42,23 +42,11 @@
 
 ### 关键功能说明
 
-#### 1. SQL 文件
-- **1_drop_table.sql**: 追加 6 张表的 DROP TABLE 语句，每条用 `-- <fen> --` 分隔
-- **2_create_table.sql**: 追加 6 张表的 CREATE TABLE 语句，每条用 `-- <fen> --` 分隔
-- **3_insert_xphp_config_part1.sql**: 追加 7 条 config 配置项
-- **3_insert_xphp_menu_part1.sql**: 追加 4 个后台菜单
+详细设计参见 [S0 详细设计文档](SEO自动化落地页系统-S0-数据库与公共函数-详细设计.md)。
 
-#### 2. 公共函数（app/common.php 末尾追加）
-
-| 函数名 | 功能 |
-|--------|------|
-| `ai_chat()` | AI 调用统一入口（OpenAI/Anthropic/Ollama 协议） |
-| `filter_landing_html()` | 落地页 HTML 安全过滤 + 结构规范化 |
-| `to_pinyin()` | 中文转拼音，使用 `Transliterator` |
-| `generate_url_path()` | 生成唯一的 URL 路径段，处理拼音冲突 |
-| `baidu_push()` | 百度收录推送 |
-| `parse_seo_meta()` | 从 AI 生成的 HTML 中解析 SEO 元数据 |
-| `render_prompt()` | 提示词模板变量渲染 |
+- **SQL 文件**: 追加到 `backup/bak_all_initialize/` 现有文件末尾，每条用 `-- <fen> --` 分隔
+- **公共函数**: 追加到 `app/common.php` 末尾，共 7 个函数（ai_chat、filter_landing_html、to_pinyin、generate_url_path、baidu_push、parse_seo_meta、render_prompt）
+- **依赖框架函数**: db()、cache()、encrypt()、decrypt() 等
 
 ### 注意事项
 1. **SQL 格式**: 严格遵循现有 `backup/bak_all_initialize/` 目录下的格式，追加到现有文件末尾
@@ -68,9 +56,8 @@
 5. **flock 锁**: 锁文件路径为 `RUNTIME_PATH . '/cache/seo_lock_{type}.lock'`
 
 ### 验证方法
-- SQL 文件语法检查
-- `php -l app/common.php` 语法检查
-- 能成功执行 SQL 创建 6 张新表
+
+参见 [S0 详细设计文档 · 第5章 验证方法](SEO自动化落地页系统-S0-数据库与公共函数-详细设计.md)
 
 ---
 
@@ -95,23 +82,11 @@
 
 ### 关键功能说明
 
-#### 1. AiConfig 模型
-- 表名：`ai_config`
-- 支持：CRUD、状态切换、连接测试
-- 厂商预设：11 种预设配置
-- 连接测试：3秒限频缓存
+详细设计参见 [S1 详细设计文档](SEO自动化落地页系统-S1-AI配置管理-详细设计.md)。
 
-#### 2. Prompt 模型
-- 表名：`prompt`
-- 类型：`page`（落地页）、`expand`（拓词）
-- 激活机制：同类型同方向仅一个可激活
-- 变量支持：`{keyword}`、`{site_name}`、`{site_url}`、`{date}`、`{time}`
-
-#### 3. 控制器规范
-- 继承 `app\admin\controller\Cp`
-- `$model` 属性：`admin@ai_config`、`admin@prompt`
-- 使用 `state()` 进行状态切换
-- 使用 `del()` 进行删除（先停用）
+- **AiConfig**: 模型引用 `common@ai_config`，支持 11 种厂商预设，连接测试 3 秒限频
+- **Prompt**: 模型引用 `common@prompt`，类型分 page/expand，同 type+direction 仅一个可激活
+- **控制器**: 继承 Cp 基类，$model 设为 `common@ai_config` / `common@prompt`
 
 ### 注意事项
 1. **模型位置**: 放在 `app/common/model/`，使用 `model('common@ai_config')` 引用
@@ -121,10 +96,8 @@
 5. **厂商预设**: 提供 11 种预设，选择后自动填充
 
 ### 验证方法
-- 后台可访问 AI 配置页面
-- 后台可添加、编辑、删除 Prompt 模板
-- 连接测试功能正常
-- 激活机制正常工作
+
+参见 [S1 详细设计文档 · 第9章 验证方法](SEO自动化落地页系统-S1-AI配置管理-详细设计.md)
 
 ---
 
@@ -145,22 +118,12 @@
 
 ### 关键功能说明
 
-#### 1. Keyword 模型
-- 表名：`keyword`
-- 字段：`word`、`pinyin`、`source`、`status`、`has_page`
-- `word` 唯一，`pinyin` 唯一
-- 添加时自动调用 `to_pinyin()` 和 `generate_url_path()`
+详细设计参见 [S2 详细设计文档](SEO自动化落地页系统-S2-关键词管理-详细设计.md)。
 
-#### 2. 关键词管理功能
-- CRUD：增删改查
-- 状态切换：批量启用/停用
-- AI 拓词：调用 ai_chat() 生成相关关键词
-- CSV 导入/导出：2MB 限制，最多 1000 行
-- 批量生成：flock 互斥，单次最多 3 个
-
-#### 3. 删除限制
-- 只能删除 status=0 且 has_page=0 的关键词
-- 有页面关联的关键词禁止删除
+- **Keyword**: 模型引用 `common@keyword`，添加时自动调用 to_pinyin() 和 generate_url_path()
+- **删除限制**: 只能删除 status=0 且 has_page=0 的关键词
+- **CSV 安全**: 2MB 限制、最多 1000 行、MIME 验证、随机重命名、公式注入防护
+- **批量生成**: flock 互斥，单次最多 3 个
 
 ### 注意事项
 1. **拼音生成**: 添加关键词时自动调用 `to_pinyin()` 和 `generate_url_path()`
@@ -170,11 +133,8 @@
 5. **拓词提示**: 使用 prompt 模板的 `expand` 类型
 
 ### 验证方法
-- 后台可访问关键词管理页面
-- 后台可添加、编辑、删除关键词
-- 拼音 URL 自动生成正常
-- 冲突处理正常
-- AI 拓词功能正常
+
+参见 [S2 详细设计文档 · 第9章 验证方法](SEO自动化落地页系统-S2-关键词管理-详细设计.md)
 
 ---
 
@@ -196,25 +156,12 @@
 
 ### 关键功能说明
 
-#### 1. Page 模型
-- 表名：`page`
-- 字段：`keyword_id`、`url_path`、`title`、`keywords`、`description`、`content`、`status` 等
-- 状态机：`0`（草稿）↔ `1`（已发布）
-- `url_path` 唯一，发布后不可修改
+详细设计参见 [S3 详细设计文档](SEO自动化落地页系统-S3-页面生成管理-详细设计.md)。
 
-#### 2. 页面生成流程
-1. 选择关键词（has_page=0）
-2. 调用 `render_prompt()` 渲染提示词模板
-3. 调用 `ai_chat()` 生成内容
-4. 调用 `parse_seo_meta()` 解析 SEO 元数据
-5. 调用 `filter_landing_html()` 安全过滤
-6. 存入数据库（状态=草稿）
-
-#### 3. 状态切换
-- **草稿 → 发布**: 重置 `is_pushed_normal`、`is_pushed_fast`
-- **发布 → 下线**: `url_path` 不可修改，前端显示 readonly
-- **草稿 → 删除**: 可直接删除
-- **发布 → 删除**: 需先下线，再删除
+- **Page**: 模型引用 `common@page`，url_path 唯一，发布后不可修改
+- **事务一致性**: 页面创建/删除时同一事务内同步更新 keyword.has_page
+- **内容质量**: 生成内容 < 500 字符视为失败
+- **状态机**: 草稿(0) ↔ 发布(1)，发布→删除需先下线
 
 ### 注意事项
 1. **URL 不可变性**: 发布后 `url_path` 后端强制拒绝修改
@@ -224,11 +171,8 @@
 5. **缓存清理**: 页面增删改时自动清除前台缓存
 
 ### 验证方法
-- 后台可访问页面管理页面
-- 可手动生成单页面
-- 页面状态转换正常（草稿 ←→ 发布）
-- 页面预览正常
-- SEO 元数据解析正常
+
+参见 [S3 详细设计文档 · 第9章 验证方法](SEO自动化落地页系统-S3-页面生成管理-详细设计.md)
 
 ---
 
@@ -253,23 +197,12 @@
 
 ### 关键功能说明
 
-#### 1. 内置任务类型
-| 类型 | 说明 |
-|------|------|
-| `generate_page` | 批量生成页面（每次最多 3 个） |
-| `push_baidu` | 百度普通收录推送 |
-| `push_baidu_fast` | 百度快速收录推送 |
-| `sitemap` | 生成 sitemap.xml |
-| `clear_cache` | 清理缓存、清理 30 天前日志、修复 has_page 不一致 |
+详细设计参见 [S4 详细设计文档](SEO自动化落地页系统-S4-定时任务管理-详细设计.md)。
 
-#### 2. Cron 触发方式
-- **HTTP 触发**: `/cron/{key}`
-- **安全性**: 密钥验证（≥32 位随机字符）+ 60 秒限频 + flock锁 + IP 白名单（空=拒绝所有）
-- **超时恢复**: 每次检查超过 `timeout+60` 秒仍在执行的日志标记为失败
-
-#### 3. 并发控制
-- **flock 锁**: 手动批量生成和 Cron 共享同一锁文件 `runtime/cache/seo_lock_generate.lock`
-- **获取锁失败**: 手动操作返回提示，Cron 记录跳过并标记成功
+- **Task**: 模型引用 `common@task`，type 字段 UNIQUE，每种任务全局仅一条
+- **TaskLog**: 模型引用 `common@task_log`
+- **Cron 触发**: `/cron/{key}`，密钥验证 + 60秒限频 + flock锁 + IP 白名单
+- **并发控制**: flock 锁文件 `runtime/cache/seo_lock_{type}.lock`
 
 ### 注意事项
 1. **任务唯一性**: `type` 字段 UNIQUE，每种任务全局仅一条
@@ -279,11 +212,8 @@
 5. **手动触发**: 后台支持手动触发单任务执行
 
 ### 验证方法
-- 后台可访问任务管理页面
-- Cron 接口可正常触发
-- 任务执行日志记录正常
-- flock 锁机制正常
-- 百度推送功能正常
+
+参见 [S4 详细设计文档 · 第9章 验证方法](SEO自动化落地页系统-S4-定时任务管理-详细设计.md)
 
 ---
 
@@ -303,34 +233,11 @@
 
 ### 关键功能说明
 
-#### 1. 落地页路由
-- **URL 格式**: `/keyword/{pinyin}.html`
-- **访问控制**: 仅查询 `status=1` 的页面，草稿/不存在返回 404
-- **SEO 优化**:
-  - 输出 Canonical URL
-  - 输出 CSP 头（`default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'none'; ...`）
-  - 访问时原子递增 `view_count`
-  - 页面缓存 1 小时
+详细设计参见 [S5 详细设计文档](SEO自动化落地页系统-S5-前台展示-详细设计.md)。
 
-#### 2. 首页改造
-- 展示最新 10 条已发布页面（标题 + 描述 + 时间）
-- 按 `create_time` 倒序
-- 首页缓存 1 小时
-
-#### 3. Sitemap.xml
-- 生成 sitemap.xml 到 `public/sitemap.xml`
-- 只含 `status=1` 的页面
-- 绝对 URL，带最后修改时间
-- 脏标记策略：页面变更时标记 `sitemap_dirty=true`，无变更则跳过
-
-#### 4. robots.txt
-```
-User-agent: *
-Allow: /keyword/
-Disallow: /admin/
-Disallow: /cron/
-Sitemap: {site_url}/sitemap.xml
-```
+- **落地页路由**: `/keyword/{pinyin}.html`，仅查询 status=1 的页面
+- **SEO 优化**: Canonical URL + CSP 头 + view_count 原子递增 + 页面缓存 1 小时
+- **Sitemap**: 脏标记策略，由 S4 的 sitemap 任务定时生成
 
 ### 注意事项
 1. **落地页渲染**: 从数据库读取 `content` 字段直接输出，无单独模板
@@ -340,10 +247,6 @@ Sitemap: {site_url}/sitemap.xml
 5. **首页缓存**: 页面发布/下线/删除时清除首页缓存
 
 ### 验证方法
-- 落地页 URL 可正常访问
-- 首页展示最新页面列表
-- Sitemap.xml 可正常生成
-- Canonical URL 正确输出
-- CSP 头正确输出
-- view_count 正确递增
+
+参见 [S5 详细设计文档 · 第9章 验证方法](SEO自动化落地页系统-S5-前台展示-详细设计.md)
 

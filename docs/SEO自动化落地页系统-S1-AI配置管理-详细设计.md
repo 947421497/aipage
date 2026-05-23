@@ -40,7 +40,7 @@
 
 ### 3.1 AiConfig 控制器
 - **继承**: app\admin\controller\Cp
-- **模型**: admin@ai_config
+- **模型**: common@ai_config
 - **功能**:
   - index(): 列表
   - add(): 新增
@@ -51,7 +51,7 @@
 
 ### 3.2 Prompt 控制器
 - **继承**: app\admin\controller\Cp
-- **模型**: admin@prompt
+- **模型**: common@prompt
 - **功能**:
   - index(): 列表
   - add(): 新增
