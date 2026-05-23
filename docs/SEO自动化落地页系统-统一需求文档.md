@@ -132,7 +132,7 @@
 | 标识 | 名称 | 协议类型 | API 地址 | 默认模型 | SSL验证 |
 |------|------|----------|----------|----------|---------|
 | openai | OpenAI | openai | https://api.openai.com/v1/chat/completions | gpt-4o-mini | 1 |
-| deepseek | DeepSeek | openai | https://api.deepseek.com/chat/completions | deepseek-chat | 1 |
+| deepseek | DeepSeek | openai | https://api.deepseek.com/v1/chat/completions | deepseek-chat | 1 |
 | qwen | 通义千问 | openai | https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions | qwen-turbo | 1 |
 | baidu | 百度千帆 | openai | https://qianfan.baidubce.com/v2/chat/completions | ernie-4.0-8k | 1 |
 | xiaomi | 小米MiMo | openai | https://api.xiaomimimo.com/v1/chat/completions | mimo-v2-flash | 1 |
@@ -241,7 +241,7 @@ default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'none'; img-src
 7. 输出页面 content
 8. 追加相关推荐（5 条页面链接，在 `</body>` 前）
 **相关推荐实现**: `Index::dispatch()` 渲染时，查询 5 条 status=1 的其他页面，拼成 HTML 块追加到 content 末尾（`</body>` 前或内容末尾）。
-**参数传递机制**: 路由配置 `keyword/([a-zA-Z\x7f-\xff0-9-%\+]+)` 中的正则捕获组，通过框架参数注入传递给控制器方法。路由映射 `'keyword/([a-zA-Z\x7f-\xff0-9-%\+]+)' => 'index/dispatch/path/${1}'` 中，`${1}` 为正则第一个捕获组，框架将其作为 `dispatch()` 方法的 `$path` 参数注入。`$path` 参数即 keyword 表的 `pinyin` 字段值（存储为 page 表的 `url_path` 字段），控制器通过 `WHERE url_path = $path` 查询对应页面。
+**参数传递机制**: 路由配置 `keyword/([a-zA-Z0-9\-_%+]+)` 中的正则捕获组，通过框架参数注入传递给控制器方法。路由映射 `'keyword/([a-zA-Z0-9\-_%+]+)' => 'index/dispatch/path/$1'` 中，`$1` 为正则第一个捕获组，框架将其作为 `dispatch()` 方法的 `$path` 参数注入。`$path` 参数即 keyword 表的 `pinyin` 字段值（存储为 page 表的 `url_path` 字段），控制器通过 `WHERE url_path = $path` 查询对应页面。
 
 ### 4.6 前台首页
 | 功能模块 | 需求描述 | 优先级 |
@@ -662,6 +662,52 @@ Sitemap: {site_url}/sitemap.xml
 | template/default/index/index.html | 追加页面列表卡片 |
 | public/robots.txt | 初始 robots.txt 内容 |
 
+### 9.1 模块验收清单
+
+#### S0 数据库与公共函数
+- [ ] SQL 文件语法检查通过
+- [ ] `php -l app/common.php` 语法检查通过
+- [ ] 执行安装器后 6 张新表创建成功
+- [ ] 7 个公共函数可正常调用
+
+#### S1 AI配置管理
+- [ ] 后台可访问 AI 配置页面和 Prompt 模板页面
+- [ ] 可添加、编辑、删除 AI 配置，厂商预设自动填充正常
+- [ ] 连接测试功能正常（3秒限频）
+- [ ] Prompt 模板 CRUD 正常
+
+#### S2 关键词管理
+- [ ] 后台可访问关键词管理页面
+- [ ] 拼音 URL 自动生成正常，冲突追加数字后缀
+- [ ] AI 拓词功能正常（候选词标记已存在）
+- [ ] CSV 导入导出功能正常（2MB限制、MIME验证、公式注入防护）
+- [ ] 仅可删除 status=0 且 has_page=0 的关键词
+
+#### S3 页面生成管理
+- [ ] 可手动生成单页面（完整流水线：render_prompt → ai_chat → parse_seo_meta → filter_landing_html → 事务写入）
+- [ ] 内容 <500 字符视为失败
+- [ ] 页面状态机正常：草稿→发布（重置推送标记）、发布→下线、草稿→删除
+- [ ] 发布后 url_path 不可修改（后端拒绝 + 前端 readonly）
+- [ ] has_page 一致性保证（事务同步 + 删除检查）
+- [ ] 页面预览功能正常
+
+#### S4 定时任务管理
+- [ ] 后台可访问定时任务页面，5条内置任务初始数据正确
+- [ ] Cron 触发接口正常（密钥验证 + IP白名单 + 60秒限频 + flock锁）
+- [ ] flock 锁防止并发：手动批量生成和 Cron 共享同一锁
+- [ ] 任务执行日志正常，失败项红色标记
+- [ ] 百度推送 / Sitemap 生成 / 缓存清理功能正常
+
+#### S5 前台展示
+- [ ] 落地页 URL `/keyword/{pinyin}.html` 可正常访问
+- [ ] 草稿/不存在页面返回 HTTP 404
+- [ ] CSP 安全头正确输出
+- [ ] Canonical URL 正确输出
+- [ ] view_count 原子递增
+- [ ] 相关推荐 5 条链接追加在 `</body>` 前
+- [ ] 首页展示最新 10 条已发布页面（缓存 1 小时）
+- [ ] robots.txt 配置正确
+
 ---
 
 ## 10. 框架约束
@@ -703,6 +749,12 @@ Sitemap: {site_url}/sitemap.xml
 - **后台视图布局**: 必须包含完整 lyear 布局（`_head.html` → `lyear-preloader` → `lyear-layout-web` → `sidebar.html` → `_header.html` → `<main>` → `footer.html`）
 - **模板编译缓存**: 模板修改后须删除 `runtime/admin/view/` 下所有文件
 - **`APP_DEBUG=false`**: 错误被完全隐藏，调试时临时开启 `config/app.php` 的 `debug => true` 和 `trace => true`
+- **`|default` 修饰符仅在独立变量输出时有效**：`{$vo.key|default='x'}` 可用，但在 `{:form_radio('name',$vo['key']|default='x')}` 函数参数内无效。解决方案：在函数调用前用 `{php $val = !empty($vo['key']) ? $vo['key'] : 'x';}` 预处理
+- **`?:` 短三元运算符不被模板引擎支持**：`{:func() ?: 'default'}` 会报语法错误。解决方案：改用 `{if func():}{:func()}{else:}default{/if}`
+- **`{:CONSTANT}` 不被编译**：无括号的表达式不匹配任何模板正则。解决方案：改为 `{:echo(CONSTANT)}`
+- **`{literal}` 块内的模板标签原样输出**：`{literal}` 中的 `{:url()}` 不被编译。解决方案：用 `{/literal}{:url(...)}{literal}` 包裹
+- **模态框表单中不能使用 `<script>` 标签**：`openModal()` 使用 `stripScripts()` 移除所有 `<script>` 标签。解决方案：将 JS 逻辑改为内联 `onchange`/`onclick` 事件处理器
+- **验证规则中不能使用含 `|` 的正则**：框架用 `explode('|', $rules)` 分割验证规则，正则中的 `|` 会被误分割。解决方案：改用自定义验证方法
 
 ### 10.4 业务逻辑约束
 - **generatePage() url_path 唯一性**: 必须使用 `generate_url_path($keyword['word'])` 而非 `$keyword['pinyin']`。两个不同关键词可能产生相同拼音，`generate_url_path()` 在页面生成时重新检查 page 表唯一性，避免 `uk_url_path` 约束冲突
@@ -749,7 +801,7 @@ class Config extends Cp
     protected array $stateList = ['status' => ['停用', '启用']];
 }
 ```
-**Cp 基类 del() 方法**: 内置 `status = 0` 的硬编码过滤条件。对于无 status 字段的表，需在子控制器中覆盖 `del()` 方法。
+**Cp 基类 del() 方法**: 内置 `status = 0` 的硬编码过滤条件。对于无 status 字段的表，需在子控制器中覆盖 `del()` 方法。`select()` 返回普通数组而非模型对象集合，不能对数组元素调用 `->del()`。需要用 `model($this->model)->find($id)` 逐个获取模型实例再删除，且 `$id` 需要强制转换为 `(int)$id`。
 **模型文件位置**: 所有 SEO 模块模型统一放在 `app\common\model\` 下，使用 `model('common@xxx')` 引用。
 **事务内模型操作**: 框架 `pdo()->trans()` 仅在闭包抛异常时回滚，闭包返回值不被使用，`trans()` 只返回 bool。模型 `save()` 验证失败时调用 `halt()` 直接 exit。事务内应手动检查 `isFail()` 并抛异常，不应依赖闭包返回值传递数据：
 ```php
@@ -783,6 +835,63 @@ class Cron { use Jump; protected bool $isApi = true; ... }
 - 表单：`_form.html` 通过 `openModal()` 加载
 - 列表操作：`ajaxConfirm(url, action, refresh)` / `actionConfirm(title, url)` / `openModal(url, title)`
 - 模板语法：`{foreach $list as $vo}...{/foreach}`、`{if condition:}...{else:}...{/if}`、`{literal}...JS...{/literal}`
+
+### 10.6 模板引擎语法速查
+
+> 完整 XPHP 框架语法规范见 [XPHP框架语法规范.md](XPHP框架语法规范.md)。以下为后台视图开发最常用的语法速查。
+
+#### 变量与函数
+
+```
+{$var}                    → <?php echo e($var)?>           默认转义
+{$var|raw}                → <?php echo $var?>              不转义输出
+{$var|default='xxx'}      → 空值时显示默认值
+{:url('index')}                              → 带转义的URL生成
+{:form_select('name',$options,$selected)}    → 下拉选择框
+{:form_radio('name',$options,$selected)}     → 单选按钮组
+{:input('name','','clear_html')}             → 获取输入
+{:echo($var)}                                → 不转义输出
+{php $var = expression}                      → PHP赋值
+```
+
+#### 控制结构
+
+```
+{if condition:}...{/if}
+{elseif condition:}
+{else:}
+{empty $var:}...{/empty}    (或 {/if})
+{foreach $list as $vo}...{/foreach}
+{include file='public/_head.html'}
+```
+
+#### JS 交互函数（xphp-1.0.js）
+
+| 函数 | 用途 |
+|------|------|
+| `openModal(url, title, size)` | 弹窗加载表单页 |
+| `ajaxConfirm(url, action, refresh)` | 单条确认操作，refresh=true刷新 |
+| `actionConfirm(action, url)` | 批量操作（勾选ids后POST） |
+| `selectAll(checked)` | 全选/取消全选 |
+
+#### 表单提交机制
+
+表单使用 `class="site-form submit-ajax"`，自动拦截提交：
+- 序列化表单数据 POST 到 action URL
+- 成功后 toast 提示 + 关闭弹窗 + 刷新列表页
+- 失败后 toast 错误信息
+
+#### 关键注意事项
+
+| 问题 | 解决方案 |
+|------|----------|
+| `\|default` 在函数参数内无效 | 用 `{php $val = ...}` 预处理 |
+| `?:` 短三元不被支持 | 改用 `{if:}{else:}{/if}` |
+| `{:CONSTANT}` 不被编译 | 改用 `{:echo(CONSTANT)}` |
+| `{literal}` 内模板标签不编译 | 用 `{/literal}{:url(...)}{literal}` 包裹 |
+| Modal 表单不能用 `<script>` | 改用内联 `onchange`/`onclick` |
+| 验证规则含 `\|` 被误分割 | 改用自定义验证方法 |
+| 模板修改后不生效 | 清除 `runtime/admin/view/` 编译缓存 |
 
 ---
 
@@ -992,7 +1101,7 @@ class AiConfig extends Model
     protected string $pk = 'id';
     protected array $validate = [
         ['name', 'required', '配置名称必填', FV_MUST, AC_BOTH],
-        ['api_type', '/^(openai|anthropic|ollama)$/', '接口类型无效', FV_MUST, AC_BOTH],
+        ['api_type', 'validApiType', '接口类型无效', FV_MUST, AC_BOTH],
         ['api_url', 'required', 'API地址必填', FV_MUST, AC_BOTH],
         ['api_key', 'apiKeyRequired', '非Ollama类型必须填写API密钥', FV_MUST, AC_INSERT],
         ['model', 'required', '模型名称必填', FV_MUST, AC_BOTH],
@@ -1003,6 +1112,10 @@ class AiConfig extends Model
     protected array $filter = [
         ['api_key', FV_EMPTY, AC_UPDATE],
     ];
+    public function validApiType(string $value, string $field, string $params, array $data): bool
+    {
+        return in_array($value, ['openai', 'anthropic', 'ollama']);
+    }
     public function apiKeyRequired(string $value, string $field, string $params, array $data): bool
     {
         return ($data['api_type'] ?? '') === 'ollama' || !empty($value);
@@ -1033,12 +1146,20 @@ class Prompt extends Model
     protected string $pk = 'id';
     protected array $validate = [
         ['name', 'required', '模板名称必填', FV_MUST, AC_BOTH],
-        ['type', '/^(page|expand)$/', '类型无效', FV_MUST, AC_BOTH],
-        ['direction', '/^(related|question|longtail|commercial|)$/', '拓词方向无效', FV_MUST, AC_BOTH],
+        ['type', 'validType', '类型无效', FV_MUST, AC_BOTH],
+        ['direction', 'validDirection', '拓词方向无效', FV_MUST, AC_BOTH],
     ];
     protected array $auto = [
         ['status', '1', 'string', FV_MUST, AC_INSERT],
     ];
+    public function validType(string $value): bool
+    {
+        return in_array($value, ['page', 'expand']);
+    }
+    public function validDirection(string $value): bool
+    {
+        return in_array($value, ['related', 'question', 'longtail', 'commercial', '']);
+    }
 }
 ```
 引用方式：`model('common@prompt')`
@@ -1057,12 +1178,16 @@ class Keyword extends Model
     protected array $validate = [
         ['word', 'required', '关键词必填', FV_MUST, AC_BOTH],
         ['word', 'unique', '关键词已存在', FV_MUST, AC_BOTH],
-        ['source', '/^(manual|ai|csv)$/', '来源无效', FV_VALUE, AC_BOTH],
+        ['source', 'validSource', '来源无效', FV_VALUE, AC_BOTH],
     ];
     protected array $auto = [
         ['status', '1', 'string', FV_MUST, AC_INSERT],
         ['has_page', '0', 'string', FV_MUST, AC_INSERT],
     ];
+    public function validSource(string $value): bool
+    {
+        return in_array($value, ['manual', 'ai', 'csv']);
+    }
     protected function _before_insert(array &$data): void
     {
         if (empty(trim($data['word'] ?? ''))) {
@@ -1499,7 +1624,7 @@ class Task extends Model
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
         $xml .= "  <url>\n    <loc>" . htmlspecialchars($siteUrl) . "/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n";
         foreach ($pages as $page) {
-            if (empty($page['url_path']) || !preg_match('/^[a-zA-Z0-9\x7f-\xff\-_]+$/', $page['url_path'])) continue;
+            if (empty($page['url_path']) || !preg_match('/^[a-zA-Z0-9\-_]+$/', $page['url_path'])) continue;
             $xml .= "  <url>\n";
             $xml .= "    <loc>" . htmlspecialchars($siteUrl . "/keyword/" . $page['url_path'] . ".html") . "</loc>\n";
             $xml .= "    <lastmod>" . date('Y-m-d', $page['update_time']) . "</lastmod>\n";
@@ -2173,34 +2298,24 @@ class Cron
 ```php
 <?php
 return [
-    'keyword/([a-zA-Z\x7f-\xff0-9-%\+]+)' => 'index/dispatch/path/${1}',
-    'cron/([a-zA-Z0-9\-_]+)'               => 'cron/index/key/${1}',
+    'keyword/([a-zA-Z0-9\-_%+]+)' => 'index/dispatch/path/$1',
+    'cron/([a-zA-Z0-9\-_]+)'      => 'cron/index/key/$1',
 ];
 ```
 | 路由 | 参数别名 | 正则 | 指向 | 说明 |
 |------|----------|------|------|------|
-| `keyword/:path` | `:path` | `[a-zA-Z\x7f-\xff0-9-%\+]+` | `index/dispatch` | 落地页分发，支持中文 URL |
+| `keyword/:path` | `:path` | `[a-zA-Z0-9\-_%+]+` | `index/dispatch` | 落地页分发（拼音路径不含中文） |
 | `cron/:key` | `:key` | `[a-zA-Z0-9\-_]+` | `cron/index` | 定时触发，限制密钥格式为字母数字及连字符下划线 |
 框架 `url_clear_suffix => ['.html']` 自动去除 `.html` 后缀，因此 `/keyword/seo-optimization.html` 实际匹配 `keyword/seo-optimization`。
-**参数传递机制**: 路由正则捕获组通过框架参数注入传递给控制器方法。例如路由 `'keyword/([a-zA-Z\x7f-\xff0-9-%\+]+)' => 'index/dispatch/path/${1}'` 中，`${1}` 为正则第一个捕获组，框架将其作为 `dispatch()` 方法的 `$path` 参数注入。
+**参数传递机制**: 路由正则捕获组通过框架参数注入传递给控制器方法。例如路由 `'keyword/([a-zA-Z0-9\-_%+]+)' => 'index/dispatch/path/$1'` 中，`$1` 为正则第一个捕获组，框架将其作为 `dispatch()` 方法的 `$path` 参数注入。
 
 ### 14.2 后台路由
 文件：`route/admin.php`
-在现有路由数组中追加：
+后台使用框架默认的 `/控制器/方法` 自动路由，无需额外配置。
 ```php
-'ai_config/:string' => 'ai_config/$1',
-'prompt/:string'    => 'prompt/$1',
-'keyword/:string'   => 'keyword/$1',
-'page/:string'      => 'page/$1',
-'task/:string'      => 'task/$1',
+<?php
+return [];
 ```
-| 路由 | 指向控制器 | 说明 |
-|------|-----------|------|
-| `ai_config/:string` | AiConfig | AI配置管理 |
-| `prompt/:string` | Prompt | 提示词模板管理 |
-| `keyword/:string` | Keyword | 关键词管理 |
-| `page/:string` | Page | 落地页管理 |
-| `task/:string` | Task | 定时任务管理 |
 
 ---
 
@@ -2251,6 +2366,93 @@ return [
 |------|------|
 | `template/default/index/index.html` | 首页改造：在公告栏下方追加卡片式页面列表（标题+摘要+时间，最多10条，不分页） |
 落地页不使用独立模板，从数据库读取 content 字段直接输出。
+
+### 15.3 后台视图标准模板骨架
+
+**列表页（index.html）**以 lyear 布局为基础结构：
+
+```html
+{include file='public/_head.html'}
+</head>
+<body>
+<div id="lyear-preloader" class="loading">...</div>
+<div class="lyear-layout-web">
+  <div class="lyear-layout-container">
+    {include file='public/sidebar.html'}
+    {include file='public/_header.html'}
+    <main class="lyear-layout-content">
+      <div class="container-fluid">
+        <div class="row"><div class="col-lg-12">
+          <div class="card">
+            <header class="card-header"><div class="card-title">模块名称</div></header>
+            <div class="card-body">
+              <!-- 工具栏按钮 -->
+              <div class="card-btns mb-2-5">
+                <a href="javascript:openModal('{:url('add')}','新增')" class="btn btn-primary me-1">新增</a>
+                <button onclick="actionConfirm('启用','{:url('state?params=status-1')}');" class="btn btn-success me-1">启用</button>
+                <button onclick="actionConfirm('停用','{:url('state?params=status-0')}');" class="btn btn-warning me-1">停用</button>
+                <button onclick="actionConfirm('删除','{:url('del')}');" class="btn btn-danger">删除</button>
+              </div>
+              <!-- 数据表格 -->
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th><input type="checkbox" id="check-all" onclick="selectAll(this.checked)"></th>
+                      <th>ID</th><th>名称</th><th>状态</th><th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {foreach $list as $vo}
+                    <tr>
+                      <td><input type="checkbox" class="ids" name="ids[]" value="{$vo.id}"></td>
+                      <td>{$vo.id}</td>
+                      <td>{$vo.name}</td>
+                      <td>
+                        {if $vo['status']==1:}
+                        <a href="javascript:ajaxConfirm('{:url('state?params=status-0',['ids'=>$vo['id']])}','停用',true);" class="text-success">已启用</a>
+                        {else:}
+                        <a href="javascript:ajaxConfirm('{:url('state?params=status-1',['ids'=>$vo['id']])}','启用',true);" class="text-secondary">已停用</a>
+                        {/if}
+                      </td>
+                      <td>
+                        <a href="javascript:openModal('{:url('edit',['id'=>$vo['id']])}','编辑')">编辑</a>
+                        <a href="javascript:ajaxConfirm('{:url('del',['ids'=>$vo['id']])}','删除',true);">删除</a>
+                      </td>
+                    </tr>
+                  {/foreach}
+                  </tbody>
+                </table>
+              </div>
+              {empty $list->toArray():}<p class="text-center text-muted py-3">暂无记录！</p>
+              {else:}{$list->links()|raw}{/empty}
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </main>
+    {include file='public/footer.html'}
+</body>
+</html>
+```
+
+**表单页（_form.html）**弹窗加载，不含布局：
+
+```html
+<form class="site-form submit-ajax" action="{:url($is_edit ? 'edit' : 'add')}" method="post">
+{if $is_edit:}<input type="hidden" name="id" value="{$vo.id}" />{/if}
+<div class="mb-3">
+  <label class="form-label" for="field">*字段名</label>
+  <input type="text" class="form-control" id="field" name="field" placeholder="请输入" value="{$vo.field|default=''}" required />
+</div>
+<div class="mb-3">
+  <button type="submit" class="btn btn-primary">{if $is_edit:}确定{else:}添加{/if}</button>
+  <button type="button" class="btn btn-default" data-bs-dismiss="modal">取消</button>
+</div>
+</form>
+```
+
+> **注意**: Modal 表单中禁止使用 `<script>` 标签（`openModal()` 会通过 `stripScripts()` 移除），改用内联事件处理器。
 
 ---
 
